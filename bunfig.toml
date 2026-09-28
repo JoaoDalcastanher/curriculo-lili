@@ -1,0 +1,12 @@
+[install]
+optional = true
+# Require 3 days (259200s) since a version was published before bun will install it.
+# Mitigates supply-chain attacks on freshly compromised package releases.
+minimumReleaseAge = 259200
+minimumReleaseAgeExcludes = [
+  # Add internal/workspace package names here — they are not published to the registry.
+  # "@your-org/shared",
+]
+
+[test]
+timeout = 10000

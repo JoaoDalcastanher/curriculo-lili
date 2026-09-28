@@ -1,0 +1,81 @@
+name: Lint Autofix
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_ref:
+        description: "PR head branch to fix (e.g. feature/foo)"
+        required: true
+      base_ref:
+        description: "Base branch to diff against"
+        required: false
+        default: "main"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.pr_ref }}
+  cancel-in-progress: true
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.inputs.pr_ref }}
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      # Prisma client is generated (not committed) — typed lint rules need its types.
+      - run: bunx prisma generate --schema=backend/prisma/schema.prisma
+
+      - name: Fix and commit changed files
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "+refs/heads/$BASE_REF:refs/remotes/origin/$BASE_REF"
+          CHANGED=$(git diff --name-only --diff-filter=ACMR "origin/$BASE_REF...HEAD" \
+            | grep -E '^(backend|frontend)/src/.*\.(ts|tsx|js|jsx)$' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "No source files changed; nothing to fix."
+            exit 0
+          fi
+          echo "Fixing:"
+          echo "$CHANGED"
+
+          eslint_issue_count() {
+            local json
+            json=$(echo "$CHANGED" | xargs -d '\n' bunx eslint -f json 2>/dev/null || true)
+            if [ -z "$json" ]; then
+              echo 0
+            else
+              echo "$json" | jq '[.[].messages | length] | add // 0'
+            fi
+          }
+
+          BEFORE=$(eslint_issue_count)
+          echo "$CHANGED" | xargs -d '\n' bunx eslint --fix || true
+          echo "$CHANGED" | xargs -d '\n' bunx prettier --write
+          AFTER=$(eslint_issue_count)
+          FIXED=$((BEFORE - AFTER))
+
+          echo "Fixed ${FIXED} issue(s). ${AFTER} issue(s) remain (check the Lint workflow on the PR)."
+          echo "::notice title=Lint autofix::Fixed ${FIXED} issue(s). ${AFTER} remain."
+
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -am "chore: apply eslint --fix and prettier to changed files"
+            git push origin "HEAD:$PR_REF"
+            echo "Committed auto-fixes to ${PR_REF}."
+          else
+            echo "No file changes to commit."
+          fi
+        env:
+          BASE_REF: ${{ github.event.inputs.base_ref }}
+          PR_REF: ${{ github.event.inputs.pr_ref }}

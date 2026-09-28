@@ -1,0 +1,47 @@
+name: Lint
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-changed:
+    name: eslint + prettier (changed files)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      # Prisma client is generated (not committed) — typed lint rules need its types.
+      - run: bunx prisma generate --schema=backend/prisma/schema.prisma
+
+      - name: Lint and format-check changed files
+        run: |
+          set -euo pipefail
+          CHANGED=$(git diff --name-only --diff-filter=ACMR "$BASE_SHA...HEAD" \
+            | grep -E '^(backend|frontend)/src/.*\.(ts|tsx|js|jsx)$' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "No source files changed; skipping lint."
+            exit 0
+          fi
+          echo "Linting:"; echo "$CHANGED"
+          echo "$CHANGED" | xargs -d '\n' bunx eslint --max-warnings 0
+          echo "$CHANGED" | xargs -d '\n' bunx prettier --check
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
