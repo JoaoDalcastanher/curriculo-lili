@@ -128,7 +128,11 @@ export const profile: Profile = {
     greeting: "olá, eu sou a",
     specialty: "Educação Infantil e Anos Iniciais",
     tagline: "Ensinar é plantar curiosidade e ver florescer a vontade de aprender",
-    photo: placeholder("Retrato da Gabrieli", "Retrato da Gabrieli"),
+    photo: {
+      src: "/fotos/retrato-gabrieli.jpg",
+      alt: "Gabrieli sorrindo durante uma atividade de pintura com crianças",
+      hint: "Retrato da Gabrieli",
+    },
   },
   about: {
     lead: "Uma professora que aprende junto com a turma.",

@@ -175,3 +175,9 @@ describe("site content", () => {
     expect(siteProfile.contact.links.map((link) => link.kind)).toEqual(["email", "lattes"]);
   });
 });
+
+describe("hero", () => {
+  test("uses the real portrait, not a placeholder", () => {
+    expect(siteProfile.hero.photo.src).toBe("/fotos/retrato-gabrieli.jpg");
+  });
+});

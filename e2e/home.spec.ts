@@ -20,6 +20,13 @@ test.describe("Página inicial", () => {
     ).toBeVisible();
   });
 
+  test("mostra o retrato principal", async ({ page }) => {
+    await page.goto("/");
+    const portrait = page.getByRole("img", { name: /Gabrieli sorrindo/ });
+    await expect(portrait).toBeVisible();
+    await expect(portrait).toHaveAttribute("src", "/fotos/retrato-gabrieli.jpg");
+  });
+
   test("a entrada animada termina com tudo visível", async ({ page }) => {
     await page.goto("/");
     const lastLetter = page.locator("[data-letter]").last();
