@@ -16,16 +16,17 @@ type ProjectsSectionProps = {
   projects: Project[];
   filters: ProjectFilter[];
   formatTags: (tags: string[]) => string;
+  formatAuthors: (authors: string[]) => string;
   onOpen: (id: string) => void;
 };
 
 const TAG_SEPARATOR = "|";
 
-type ProjectCardProps = Pick<ProjectsSectionProps, "formatTags" | "onOpen"> & {
+type ProjectCardProps = Pick<ProjectsSectionProps, "formatTags" | "formatAuthors" | "onOpen"> & {
   project: Project;
 };
 
-function ProjectCard({ project, formatTags, onOpen }: ProjectCardProps) {
+function ProjectCard({ project, formatTags, formatAuthors, onOpen }: ProjectCardProps) {
   const open = () => onOpen(project.id);
   return (
     <Box data-card="" data-id={project.id} data-tags={project.tags.join(TAG_SEPARATOR)}>
@@ -66,7 +67,7 @@ function ProjectCard({ project, formatTags, onOpen }: ProjectCardProps) {
               color: palette.muted,
             }}
           >
-            <span>{project.group}</span>
+            <span>{project.kind}</span>
             <span>{project.year}</span>
           </Box>
           <Box
@@ -82,12 +83,21 @@ function ProjectCard({ project, formatTags, onOpen }: ProjectCardProps) {
           >
             {project.title}
           </Box>
-          <Box
-            component="p"
-            sx={{ m: "0 0 1.25rem", fontSize: "1rem", lineHeight: 1.6, textWrap: "pretty" }}
-          >
-            {project.summary}
-          </Box>
+          {project.summary === null ? (
+            <Box
+              component="p"
+              sx={{ m: "0 0 1.25rem", fontSize: "0.92rem", lineHeight: 1.55, color: palette.muted }}
+            >
+              {formatAuthors(project.authors)}
+            </Box>
+          ) : (
+            <Box
+              component="p"
+              sx={{ m: "0 0 1.25rem", fontSize: "1rem", lineHeight: 1.6, textWrap: "pretty" }}
+            >
+              {project.summary}
+            </Box>
+          )}
           <Box
             sx={{
               mt: "auto",
@@ -155,6 +165,7 @@ export function ProjectsSection({
   projects,
   filters,
   formatTags,
+  formatAuthors,
   onOpen,
 }: ProjectsSectionProps) {
   const [active, setActive] = useState<string | null>(null);
@@ -252,6 +263,7 @@ export function ProjectsSection({
               key={project.id}
               project={project}
               formatTags={formatTags}
+              formatAuthors={formatAuthors}
               onOpen={onOpen}
             />
           ))}

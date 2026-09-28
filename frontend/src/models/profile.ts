@@ -9,7 +9,6 @@ export type YearRange = {
 
 export type Stat = {
   value: number;
-  suffix: string;
   label: string;
 };
 
@@ -18,7 +17,6 @@ export type Hero = {
   specialty: string;
   tagline: string;
   photo: Photo;
-  stats: Stat[];
 };
 
 /** A photo slot. `src: null` renders a friendly placeholder with the hint. */
@@ -51,13 +49,17 @@ export type Quote = {
 export type About = {
   lead: string;
   paragraphs: string[];
+  areasTitle: string;
   areas: string[];
   quote: Quote;
   valuesTitle: string;
   values: Value[];
 };
 
+export type ExperienceKind = "work" | "study";
+
 export type Experience = {
+  kind: ExperienceKind;
   role: string;
   school: string;
   period: YearRange;
@@ -79,14 +81,25 @@ export type Testimonial = {
   author: string;
 };
 
+/**
+ * A project or academic work. Only `id`, `title`, `kind`, `year`, `tags`,
+ * `authors` and `reference` are required; the detail blocks (goal, steps,
+ * learnings, gallery, testimonial) are hidden while empty.
+ */
 export type Project = {
   id: string;
   title: string;
-  group: string;
+  subtitle: string | null;
+  /** e.g. "Apresentação em congresso". */
+  kind: string;
   year: number;
   tags: string[];
-  summary: string;
-  goal: string;
+  /** Authors as cited in the Lattes (e.g. "CUNHA, G. A."). */
+  authors: string[];
+  /** Full bibliographic reference, as in the Lattes. */
+  reference: string;
+  summary: string | null;
+  goal: string | null;
   cover: Photo;
   steps: ProjectStep[];
   learnings: string[];
@@ -107,22 +120,23 @@ export type Degree = {
   title: string;
   institution: string;
   period: YearRange;
-  note: string;
+  note: string | null;
 };
 
-export type Course = {
+export type EventParticipation = {
   name: string;
-  hours: number | null;
+  /** e.g. "Oficina", "Palestra". */
+  kind: string;
   year: number;
 };
 
 export type Education = {
-  degree: Degree;
-  coursesTitle: string;
-  courses: Course[];
+  degrees: Degree[];
+  eventsTitle: string;
+  events: EventParticipation[];
 };
 
-export type ContactKind = "email" | "instagram" | "linkedin";
+export type ContactKind = "email" | "lattes";
 
 export type ContactLink = {
   kind: ContactKind;

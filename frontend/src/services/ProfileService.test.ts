@@ -1,12 +1,17 @@
 import { describe, expect, test } from "bun:test";
 
 import { profile as siteProfile } from "@/content/profile";
-import type { Experience, Profile, Project } from "@/models/profile";
+import type { Experience, ExperienceKind, Profile, Project } from "@/models/profile";
 
 import { ProfileService } from "./ProfileService";
 
-function experience(role: string, start: number, end: number | null): Experience {
-  return { role, school: "Escola", period: { start, end }, description: "" };
+function experience(
+  role: string,
+  kind: ExperienceKind,
+  start: number,
+  end: number | null,
+): Experience {
+  return { kind, role, school: "Escola", period: { start, end }, description: "" };
 }
 
 function project(id: string, tags: string[]): Project {
@@ -18,9 +23,9 @@ const fixture: Profile = {
   trajectory: {
     lead: "",
     experiences: [
-      experience("estágio", 2014, 2015),
-      experience("atual", 2021, null),
-      experience("alfabetizadora", 2018, 2021),
+      experience("ensino médio", "study", 2020, 2022),
+      experience("pedagogia", "study", 2024, null),
+      experience("monitora", "work", 2026, null),
     ],
   },
   projects: {
@@ -36,31 +41,60 @@ const service = new ProfileService(fixture);
 describe("trajectory", () => {
   test("lists experiences most recent first", () => {
     expect(service.getExperiences().map((item) => item.role)).toEqual([
-      "atual",
-      "alfabetizadora",
-      "estágio",
+      "monitora",
+      "pedagogia",
+      "ensino médio",
     ]);
   });
 
-  test("splits the current job from the past ones", () => {
-    expect(service.getCurrentExperience()?.role).toBe("atual");
+  test("highlights only the ongoing job, not ongoing studies", () => {
+    expect(service.getCurrentExperience()?.role).toBe("monitora");
     expect(service.getPastExperiences().map((item) => item.role)).toEqual([
-      "alfabetizadora",
-      "estágio",
+      "pedagogia",
+      "ensino médio",
     ]);
   });
 
-  test("has no current job when every experience ended", () => {
-    const ended = new ProfileService({
+  test("has no current job when only studies are ongoing", () => {
+    const studying = new ProfileService({
       ...fixture,
-      trajectory: { lead: "", experiences: [experience("x", 2010, 2012)] },
+      trajectory: { lead: "", experiences: [experience("pedagogia", "study", 2024, null)] },
     });
-    expect(ended.getCurrentExperience()).toBeNull();
+    expect(studying.getCurrentExperience()).toBeNull();
+    expect(studying.getPastExperiences()).toHaveLength(1);
+  });
+
+  test("labels ongoing work as 'hoje' and ongoing study as 'em andamento'", () => {
+    const [work, study, done] = service.getExperiences();
+    expect(service.formatExperiencePeriod(work)).toBe("2026 — hoje");
+    expect(service.formatExperiencePeriod(study)).toBe("2024 — em andamento");
+    expect(service.formatExperiencePeriod(done)).toBe("2020 — 2022");
   });
 
   test("does not mutate the original content", () => {
     service.getExperiences();
-    expect(fixture.trajectory.experiences[0].role).toBe("estágio");
+    expect(fixture.trajectory.experiences[0].role).toBe("ensino médio");
+  });
+});
+
+describe("stats", () => {
+  test("are derived from the content", () => {
+    expect(service.getStats()).toEqual([
+      { value: 2, label: "trabalhos apresentados" },
+      { value: siteProfile.education.events.length, label: "eventos e oficinas" },
+    ]);
+  });
+
+  test("use singular labels for one item", () => {
+    const single = new ProfileService({
+      ...fixture,
+      projects: { ...fixture.projects, items: [project("a", ["Ciências"])] },
+      education: { ...fixture.education, events: [siteProfile.education.events[0]] },
+    });
+    expect(single.getStats().map((stat) => stat.label)).toEqual([
+      "trabalho apresentado",
+      "evento e oficina",
+    ]);
   });
 });
 
@@ -88,13 +122,18 @@ describe("project filters", () => {
 });
 
 describe("formatting", () => {
-  test("joins tags", () => {
+  test("joins tags and authors", () => {
     expect(service.formatTags(["Artes", "Leitura"])).toBe("Artes / Leitura");
+    expect(service.formatAuthors(["CUNHA, G. A.", "KISTNER, L."])).toBe(
+      "CUNHA, G. A.; KISTNER, L.",
+    );
   });
 
-  test("formats course info with and without hours", () => {
-    expect(service.formatCourseInfo({ name: "x", hours: 40, year: 2023 })).toBe("40 h · 2023");
-    expect(service.formatCourseInfo({ name: "x", hours: null, year: 2019 })).toBe("2019");
+  test("formats events and degree periods", () => {
+    expect(service.formatEvent({ name: "x", kind: "Oficina", year: 2025 })).toBe("Oficina · 2025");
+    expect(service.formatDegreePeriod(siteProfile.education.degrees[0])).toBe(
+      "2024 — em andamento",
+    );
   });
 
   test("pads step numbers", () => {
@@ -118,15 +157,21 @@ describe("site content", () => {
     );
   });
 
-  test("gallery photos have unique alt texts within a project", () => {
+  test("every work credits Gabrieli", () => {
     projects.items.forEach((item) => {
-      const alts = item.gallery.map((photo) => photo.alt);
-      expect(new Set(alts).size).toBe(alts.length);
+      expect(item.authors).toContain("CUNHA, G. A.");
+      expect(item.reference).toContain("CUNHA, G. A.");
     });
   });
 
   test("has exactly one current job", () => {
-    const current = siteProfile.trajectory.experiences.filter((item) => item.period.end === null);
+    const current = siteProfile.trajectory.experiences.filter(
+      (item) => item.kind === "work" && item.period.end === null,
+    );
     expect(current).toHaveLength(1);
+  });
+
+  test("contacts are e-mail and Lattes only", () => {
+    expect(siteProfile.contact.links.map((link) => link.kind)).toEqual(["email", "lattes"]);
   });
 });

@@ -2,8 +2,21 @@
 // Kept as a class (CLAUDE.md: services are classes) so components stay free of logic.
 
 import type { ProjectFilter } from "@/models/homeUi";
-import type { Course, Experience, Profile, Project } from "@/models/profile";
-import { yearRangeSortKey } from "@/utils/datetime";
+import type {
+  Degree,
+  EventParticipation,
+  Experience,
+  ExperienceKind,
+  Profile,
+  Project,
+  Stat,
+} from "@/models/profile";
+import { compareYearRangesDesc, formatYearRange } from "@/utils/datetime";
+
+const ONGOING_LABEL: Record<ExperienceKind, string> = {
+  work: "hoje",
+  study: "em andamento",
+};
 
 export class ProfileService {
   constructor(private readonly profile: Profile) {}
@@ -12,19 +25,42 @@ export class ProfileService {
     return this.profile;
   }
 
+  /** Hero numbers, always derived from the content so they never go stale. */
+  getStats(): Stat[] {
+    const works = this.profile.projects.items.length;
+    const events = this.profile.education.events.length;
+    return [
+      { value: works, label: works === 1 ? "trabalho apresentado" : "trabalhos apresentados" },
+      { value: events, label: events === 1 ? "evento e oficina" : "eventos e oficinas" },
+    ];
+  }
+
   /** Experiences, most recent first (ongoing on top). */
   getExperiences(): Experience[] {
-    return [...this.profile.trajectory.experiences].sort(
-      (a, b) => yearRangeSortKey(b.period) - yearRangeSortKey(a.period),
+    return [...this.profile.trajectory.experiences].sort((a, b) =>
+      compareYearRangesDesc(a.period, b.period),
     );
   }
 
+  /** The ongoing job, highlighted as "emprego atual". */
   getCurrentExperience(): Experience | null {
-    return this.getExperiences().find((item) => item.period.end === null) ?? null;
+    return (
+      this.getExperiences().find((item) => item.kind === "work" && item.period.end === null) ?? null
+    );
   }
 
+  /** Everything else in the timeline, including ongoing studies. */
   getPastExperiences(): Experience[] {
-    return this.getExperiences().filter((item) => item.period.end !== null);
+    const current = this.getCurrentExperience();
+    return this.getExperiences().filter((item) => item !== current);
+  }
+
+  formatExperiencePeriod(experience: Experience): string {
+    return formatYearRange(experience.period, ONGOING_LABEL[experience.kind]);
+  }
+
+  formatDegreePeriod(degree: Degree): string {
+    return formatYearRange(degree.period, ONGOING_LABEL.study);
   }
 
   /** "Todos" first, then the configured tags that at least one project uses. */
@@ -49,9 +85,13 @@ export class ProfileService {
     return tags.join(" / ");
   }
 
-  /** { hours: 40, year: 2023 } → "40 h · 2023"; without hours → "2019". */
-  formatCourseInfo(course: Course): string {
-    return course.hours === null ? String(course.year) : `${course.hours} h · ${course.year}`;
+  formatAuthors(authors: string[]): string {
+    return authors.join("; ");
+  }
+
+  /** { kind: "Oficina", year: 2025 } → "Oficina · 2025". */
+  formatEvent(event: EventParticipation): string {
+    return `${event.kind} · ${event.year}`;
   }
 
   /** "01", "02"… for project steps. */

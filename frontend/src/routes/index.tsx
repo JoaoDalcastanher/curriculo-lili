@@ -43,28 +43,32 @@ function HomePage() {
 
   const openProject = service.findProject(open?.id ?? null);
   const formatTags = (tags: string[]) => service.formatTags(tags);
+  const formatAuthors = (authors: string[]) => service.formatAuthors(authors);
 
   return (
     <>
       <SiteHeader name={data.name} items={navItems} />
       <main>
-        <HeroSection profile={data} />
+        <HeroSection profile={data} stats={service.getStats()} />
         <AboutSection about={data.about} />
         <TrajectorySection
           lead={data.trajectory.lead}
           current={service.getCurrentExperience()}
           past={service.getPastExperiences()}
+          formatPeriod={(experience) => service.formatExperiencePeriod(experience)}
         />
         <ProjectsSection
           lead={data.projects.lead}
           projects={data.projects.items}
           filters={service.getProjectFilters()}
           formatTags={formatTags}
+          formatAuthors={formatAuthors}
           onOpen={(id) => setOpen((current) => current ?? { id, instant: false })}
         />
         <EducationSection
           education={data.education}
-          formatCourseInfo={(course) => service.formatCourseInfo(course)}
+          formatDegreePeriod={(degree) => service.formatDegreePeriod(degree)}
+          formatEvent={(event) => service.formatEvent(event)}
         />
         <ContactSection contact={data.contact} />
       </main>
@@ -75,6 +79,7 @@ function HomePage() {
           project={openProject}
           instant={open.instant}
           formatTags={formatTags}
+          formatAuthors={formatAuthors}
           formatStepNumber={(index) => service.formatStepNumber(index)}
           onClosed={() => setOpen(null)}
         />

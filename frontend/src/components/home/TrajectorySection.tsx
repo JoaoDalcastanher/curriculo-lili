@@ -2,7 +2,6 @@ import { Box } from "@mui/material";
 
 import type { Experience } from "@/models/profile";
 import { fonts, palette, transitionOut } from "@/theme/theme";
-import { formatYearRange } from "@/utils/datetime";
 
 import { PageContainer, Section, SectionHeader } from "./layout";
 import { Shape } from "./Shape";
@@ -11,9 +10,15 @@ type TrajectorySectionProps = {
   lead: string;
   current: Experience | null;
   past: Experience[];
+  formatPeriod: (experience: Experience) => string;
 };
 
-function CurrentJob({ experience }: { experience: Experience }) {
+type JobProps = {
+  experience: Experience;
+  formatPeriod: (experience: Experience) => string;
+};
+
+function CurrentJob({ experience, formatPeriod }: JobProps) {
   return (
     <Box component="li" data-tl-item="" sx={{ position: "relative", pb: "3rem" }}>
       <Box
@@ -61,7 +66,7 @@ function CurrentJob({ experience }: { experience: Experience }) {
               color: palette.sun,
             }}
           >
-            {formatYearRange(experience.period)}
+            {formatPeriod(experience)}
           </Box>
           <Box
             component="span"
@@ -109,7 +114,7 @@ function CurrentJob({ experience }: { experience: Experience }) {
   );
 }
 
-function PastJob({ experience }: { experience: Experience }) {
+function PastJob({ experience, formatPeriod }: JobProps) {
   return (
     <Box component="li" data-tl-item="" sx={{ position: "relative", pb: "2.75rem" }}>
       <Box
@@ -134,7 +139,7 @@ function PastJob({ experience }: { experience: Experience }) {
           color: palette.green,
         }}
       >
-        {formatYearRange(experience.period)}
+        {formatPeriod(experience)}
       </Box>
       <Box
         component="h3"
@@ -168,7 +173,7 @@ function PastJob({ experience }: { experience: Experience }) {
   );
 }
 
-export function TrajectorySection({ lead, current, past }: TrajectorySectionProps) {
+export function TrajectorySection({ lead, current, past, formatPeriod }: TrajectorySectionProps) {
   return (
     <Section id="trajetoria" label="Trajetória" background={palette.paperDeep}>
       <Shape
@@ -206,11 +211,12 @@ export function TrajectorySection({ lead, current, past }: TrajectorySectionProp
             />
           </Box>
           <Box component="ol" sx={{ listStyle: "none", m: 0, p: 0 }}>
-            {current !== null && <CurrentJob experience={current} />}
+            {current !== null && <CurrentJob experience={current} formatPeriod={formatPeriod} />}
             {past.map((experience) => (
               <PastJob
                 key={`${experience.school}-${experience.period.start}`}
                 experience={experience}
+                formatPeriod={formatPeriod}
               />
             ))}
           </Box>

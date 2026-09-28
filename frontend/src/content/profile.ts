@@ -1,214 +1,122 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // CONTEÚDO DO SITE — edite aqui.
 // Todo o texto que aparece na página vem deste arquivo; os componentes não têm
-// conteúdo fixo (ADR-0008). Textos vindos do design do Claude Design — revise
-// escolas, projetos, cursos e contatos com os dados reais.
+// conteúdo fixo (ADR-0008). Fonte: Currículo Lattes da Gabrieli
+// (http://lattes.cnpq.br/0891095904029183), atualizado em 29/07/2026.
 //
 // Fotos: coloque os arquivos em `frontend/public/fotos/` e troque `src: null`
 // por `src: "/fotos/nome-do-arquivo.jpg"`. Enquanto `src` for null, o site
 // mostra um espaço reservado com a dica (`hint`).
 // Projetos: use fotos de mãos, materiais, trabalhos e ambientes, ou crianças
 // de costas — nunca rostos de alunos identificáveis.
+//
+// Detalhes dos projetos (objetivo, etapas, aprendizados, galeria, depoimento)
+// ficam escondidos enquanto estiverem vazios — preencha quando quiser mostrar.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Photo, Profile, Project } from "@/models/profile";
+
+const LATTES_URL = "http://lattes.cnpq.br/0891095904029183";
 
 function placeholder(hint: string, alt: string): Photo {
   return { src: null, alt, hint };
 }
 
-function gallery(projectTitle: string, hints: string[]): Photo[] {
-  return hints.map((hint) => placeholder(`foto: ${hint}`, `${projectTitle}: ${hint}`));
-}
-
 const projects: Project[] = [
   {
-    id: "horta",
-    title: "Horta na escola",
-    group: "Pré II · 5 anos",
-    year: 2025,
-    tags: ["Ciências", "Família"],
-    summary:
-      "Da semente à colheita: a turma cuidou de uma horta e levou os alimentos para a merenda.",
-    goal: "Investigar como as plantas nascem e crescem, desenvolvendo observação, cuidado com o ambiente e hábitos de alimentação saudável.",
-    cover: placeholder("foto: mãos plantando mudas", "Mãos de crianças plantando mudas"),
-    steps: [
-      {
-        title: "Roda de conversa",
-        description:
-          "Levantamos o que as crianças já sabiam sobre plantas e de onde vêm os alimentos.",
-      },
-      {
-        title: "Preparo dos canteiros",
-        description:
-          "Com apoio das famílias, preparamos a terra e escolhemos as sementes: alface, cenoura, cheiro-verde e girassol.",
-      },
-      {
-        title: "Diário de observação",
-        description: "Toda semana a turma media, desenhava e registrava o crescimento das mudas.",
-      },
-      {
-        title: "Colheita e partilha",
-        description:
-          "Colhemos os alimentos, preparamos uma salada com a cozinha da escola e convidamos as famílias.",
-      },
-    ],
-    learnings: [
-      "Noções do ciclo de vida das plantas",
-      "Medidas com barbante e régua",
-      "Diário de campo coletivo com desenhos e escrita espontânea",
-      "Receitas ilustradas levadas para casa",
-    ],
-    gallery: gallery("Horta na escola", [
-      "canteiros com plaquinhas",
-      "diário de observação aberto",
-      "regador e ferramentas",
-      "mudas em copinhos",
-      "colheita em cestos",
-    ]),
-    testimonial: {
-      text: "Meu filho passou a querer ajudar na feira e a perguntar de onde vem cada alimento. Foi lindo acompanhar.",
-      author: "Mãe de aluno do Pré II",
-    },
-  },
-  {
-    id: "sacola",
-    title: "Sacola viajante de leitura",
-    group: "1º ano · 6 anos",
-    year: 2024,
-    tags: ["Leitura", "Família"],
-    summary: "Uma sacola com livros e um caderno de registros que visitou a casa de cada criança.",
-    goal: "Aproximar as famílias das práticas de leitura e fortalecer o gosto pelos livros no início da alfabetização.",
-    cover: placeholder("foto: sacola de tecido com livros", "Sacola de tecido com livros"),
-    steps: [
-      {
-        title: "Montagem da sacola",
-        description: "A turma escolheu os livros e decorou a sacola e o caderno de registros.",
-      },
-      {
-        title: "Rodízio semanal",
-        description: "Cada criança levou a sacola para casa por uma semana para ler com a família.",
-      },
-      {
-        title: "Registro em família",
-        description:
-          "No caderno, as famílias contavam como foi a leitura, com desenhos, colagens e escritas.",
-      },
-      {
-        title: "Roda de partilha",
-        description: "De volta à sala, a criança apresentava o livro e o registro para os colegas.",
-      },
-    ],
-    learnings: [
-      "Leitura compartilhada em casa e na escola",
-      "Reconto oral com sequência de fatos",
-      "Primeiras escritas de títulos e nomes de personagens",
-      "Caderno coletivo com 26 registros de família",
-    ],
-    gallery: gallery("Sacola viajante de leitura", [
-      "caderno de registros aberto",
-      "livros espalhados no tapete",
-      "desenhos feitos pelas famílias",
-      "cantinho de leitura da sala",
-    ]),
-    testimonial: {
-      text: "A sacola virou um momento esperado aqui em casa. Até o irmão mais velho quis participar.",
-      author: "Família do 1º ano",
-    },
-  },
-  {
-    id: "cientistas",
-    title: "Pequenos cientistas",
-    group: "Pré I · 4 anos",
-    year: 2024,
-    tags: ["Ciências", "Artes"],
-    summary: "Experimentos simples com água, luz e sombra para responder às perguntas da turma.",
-    goal: "Estimular a investigação a partir das perguntas das crianças, com hipóteses, testes e registro das descobertas.",
-    cover: placeholder("foto: potes com água colorida", "Potes com água colorida"),
-    steps: [
-      {
-        title: "Caixa de perguntas",
-        description:
-          "As crianças registraram suas dúvidas sobre o mundo e escolhemos juntas o que investigar.",
-      },
-      {
-        title: "Hipóteses",
-        description: "Antes de cada experimento, a turma dizia o que achava que ia acontecer.",
-      },
-      {
-        title: "Experimentos",
-        description:
-          "Misturas de cores, objetos que afundam ou flutuam e teatro de sombras com lanternas.",
-      },
-      {
-        title: "Exposição",
-        description:
-          "Montamos um painel com fotos, desenhos e as conclusões ditadas pelas crianças.",
-      },
-    ],
-    learnings: [
-      "Formular hipóteses e comparar resultados",
-      "Vocabulário: flutuar, afundar, misturar, refletir",
-      "Painel coletivo de descobertas",
-      "Teatro de sombras apresentado às outras turmas",
-    ],
-    gallery: gallery("Pequenos cientistas", [
-      "lanterna e silhuetas na parede",
-      "mãos misturando tintas",
-      "lupas e elementos da natureza",
-      "painel de descobertas",
-      "caixa de perguntas",
-      "crianças de costas diante do painel",
-    ]),
+    id: "estagio",
+    title: "Vivências no Estágio Supervisionado I",
+    subtitle: "Integração entre teoria e prática e a construção da identidade docente",
+    kind: "Apresentação em congresso",
+    year: 2026,
+    tags: ["Estágio"],
+    authors: ["CUNHA, G. A.", "BRUNS, Juliana Pedroso", "KISTNER, L."],
+    reference:
+      "CUNHA, G. A.; BRUNS, Juliana Pedroso; KISTNER, L. Vivências no estágio supervisionado I: integração entre teoria e prática e a construção da identidade docente. 2026. (Apresentação de Trabalho/Congresso).",
+    summary: null,
+    goal: null,
+    cover: placeholder("foto: registro do estágio", "Registro do estágio supervisionado"),
+    steps: [],
+    learnings: [],
+    gallery: [],
     testimonial: null,
   },
   {
-    id: "mostra",
-    title: "Mostra cultural",
-    group: "Pré II e 1º ano",
-    year: 2023,
-    tags: ["Artes", "Leitura", "Família"],
-    summary:
-      "Um percurso pela cultura popular brasileira que terminou em uma exposição aberta à comunidade.",
-    goal: "Conhecer manifestações da cultura popular brasileira por meio de músicas, histórias, brincadeiras e artes visuais.",
-    cover: placeholder("foto: máscaras penduradas no varal", "Máscaras penduradas no varal"),
-    steps: [
-      {
-        title: "Pesquisa",
-        description:
-          "Cada turma escolheu uma região e pesquisou histórias, cantigas e brincadeiras com as famílias.",
-      },
-      {
-        title: "Ateliê",
-        description:
-          "Produzimos máscaras, gravuras em isopor e bonecos inspirados no artesanato local.",
-      },
-      {
-        title: "Ensaios",
-        description: "As crianças prepararam cantigas e uma contação de história para apresentar.",
-      },
-      {
-        title: "Dia da mostra",
-        description: "A escola virou exposição, com visita guiada pelas próprias crianças.",
-      },
+    id: "parque",
+    title: "Revitalização do parque infantil",
+    subtitle: null,
+    kind: "Apresentação de trabalho",
+    year: 2025,
+    tags: ["Educação Infantil"],
+    authors: [
+      "CHIRATTI, F. G. O.",
+      "CUNHA, G. A.",
+      "HAAS, J.",
+      "KISTNER, L.",
+      "SILVA, L. B. C.",
+      "SILVA, N. M.",
+      "CASETT, N.",
     ],
-    learnings: [
-      "Repertório de cantigas e lendas brasileiras",
-      "Técnicas de gravura e modelagem",
-      "Apresentação oral para o público",
-      "Exposição com mais de 60 trabalhos",
+    reference:
+      "CHIRATTI, F. G. O.; CUNHA, G. A.; HAAS, J.; KISTNER, L.; SILVA, L. B. C.; SILVA, N. M.; CASETT, N. Revitalização do parque infantil. 2025. (Apresentação de Trabalho/Outra).",
+    summary: null,
+    goal: null,
+    cover: placeholder("foto: parque infantil revitalizado", "Parque infantil revitalizado"),
+    steps: [],
+    learnings: [],
+    gallery: [],
+    testimonial: null,
+  },
+  {
+    id: "murais",
+    title: "Murais e painéis no ensino de ciências",
+    subtitle: "Murais e painéis como estratégia de ensino de ciências da natureza",
+    kind: "Apresentação de trabalho",
+    year: 2025,
+    tags: ["Ciências"],
+    authors: [
+      "CUNHA, G. A.",
+      "MELIM, J.",
+      "KISTNER, L.",
+      "SILVA, N. M.",
+      "CASETT, N.",
+      "ROEDEL, T.",
     ],
-    gallery: gallery("Mostra cultural", [
-      "gravuras em isopor",
-      "bonecos de papel machê",
-      "corredor da exposição",
-      "instrumentos feitos com sucata",
-      "mesa do ateliê com materiais",
-    ]),
-    testimonial: {
-      text: "O projeto envolveu toda a escola e mostrou o protagonismo das crianças do começo ao fim.",
-      author: "Coordenação pedagógica",
-    },
+    reference:
+      "CUNHA, G. A.; MELIM, J.; KISTNER, L.; SILVA, N. M.; CASETT, N.; ROEDEL, T. Murais e painéis como estratégia de ensino de ciências da natureza. 2025. (Apresentação de Trabalho/Outra).",
+    summary: null,
+    goal: null,
+    cover: placeholder("foto: mural de ciências", "Mural de ciências da natureza"),
+    steps: [],
+    learnings: [],
+    gallery: [],
+    testimonial: null,
+  },
+  {
+    id: "eca",
+    title: "ECA — Estatuto da Criança e do Adolescente",
+    subtitle: null,
+    kind: "Apresentação de trabalho",
+    year: 2024,
+    tags: ["Direitos da criança"],
+    authors: [
+      "CUNHA, G. A.",
+      "DALGOSTIN, J. P.",
+      "KISTNER, L.",
+      "SENS, N.",
+      "ORLANDI, S. K. D.",
+      "ESSER, S.",
+      "CORREA, S. S.",
+    ],
+    reference:
+      "CUNHA, G. A.; DALGOSTIN, J. P.; KISTNER, L.; SENS, N.; ORLANDI, S. K. D.; ESSER, S.; CORREA, S. S. ECA – Estatuto da Criança e do Adolescente. 2024. (Apresentação de Trabalho/Outra).",
+    summary: null,
+    goal: null,
+    cover: placeholder("foto: apresentação sobre o ECA", "Apresentação sobre o ECA"),
+    steps: [],
+    learnings: [],
+    gallery: [],
+    testimonial: null,
   },
 ];
 
@@ -218,22 +126,18 @@ export const profile: Profile = {
   title: "Professora",
   hero: {
     greeting: "olá, eu sou a",
-    specialty: "Educação Infantil e Fundamental I",
+    specialty: "Educação Infantil e Anos Iniciais",
     tagline: "Ensinar é plantar curiosidade e ver florescer a vontade de aprender",
     photo: placeholder("Retrato da Gabrieli", "Retrato da Gabrieli"),
-    stats: [
-      { value: 10, suffix: "+", label: "anos em sala de aula" },
-      { value: 24, suffix: "", label: "projetos realizados" },
-      { value: 4, suffix: "", label: "escolas" },
-    ],
   },
   about: {
     lead: "Uma professora que aprende junto com a turma.",
     paragraphs: [
-      "Sou pedagoga e professora há mais de dez anos, com experiência na Educação Infantil e nos anos iniciais do Ensino Fundamental. Acredito numa escola em que a criança é protagonista: ela pergunta, investiga, cria e aprende no encontro com o outro.",
-      "Meu trabalho nasce da escuta. Planejo a partir dos interesses da turma, documento cada percurso e mantenho as famílias por perto, porque aprender é um processo que acontece dentro e fora da sala de aula.",
+      "Sou graduanda em Pedagogia no Centro Universitário de Brusque (UNIFEBE), com habilitação para atuar na Educação Infantil e nos Anos Iniciais do Ensino Fundamental. Desde 2026, trabalho como monitora no Centro de Educação Infantil Hilda Anna Eccel, em Brusque.",
+      "Concluí o Ensino Médio no Instituto Federal Catarinense — Campus Brusque, em 2022. Meus interesses de estudo estão na alfabetização, no letramento e na literatura.",
     ],
-    areas: ["Educação Infantil", "Alfabetização", "Letramento", "Fundamental I"],
+    areasTitle: "Áreas de interesse",
+    areas: ["Educação Infantil", "Anos Iniciais", "Alfabetização", "Letramento", "Literatura"],
     quote: {
       before: "Ensinar não é transferir conhecimento, mas ",
       highlight: "criar as possibilidades",
@@ -274,69 +178,91 @@ export const profile: Profile = {
     ],
   },
   trajectory: {
-    lead: "Mais de dez anos entre a Educação Infantil e a alfabetização.",
+    lead: "Da formação à sala de aula, com a Educação Infantil no centro.",
     experiences: [
       {
-        role: "Professora regente · Pré II",
-        school: "Escola Nova Semente",
-        period: { start: 2021, end: null },
-        description:
-          "Responsável por uma turma de 22 crianças de 5 anos. Planejamento por projetos, documentação pedagógica e encontros bimestrais com as famílias.",
+        kind: "work",
+        role: "Monitora · Educação Infantil",
+        school: "Centro de Educação Infantil Hilda Anna Eccel · Brusque",
+        period: { start: 2026, end: null },
+        description: "Monitora em período integral na Educação Infantil.",
       },
       {
-        role: "Professora alfabetizadora · 1º ano",
-        school: "Colégio Raízes",
-        period: { start: 2018, end: 2021 },
+        kind: "study",
+        role: "Graduação em Pedagogia",
+        school: "Centro Universitário de Brusque · UNIFEBE",
+        period: { start: 2024, end: null },
         description:
-          "Alfabetização e letramento com sequências didáticas, cantinho de leitura e acompanhamento individual das hipóteses de escrita.",
+          "Habilitação para atuar na Educação Infantil e nos Anos Iniciais do Ensino Fundamental.",
       },
       {
-        role: "Professora auxiliar · Educação Infantil",
-        school: "Escola Pequeno Mundo",
-        period: { start: 2015, end: 2018 },
-        description:
-          "Apoio à professora regente em turmas de 3 e 4 anos, com foco em rotina, brincadeiras e inclusão.",
-      },
-      {
-        role: "Estágio em docência",
-        school: "Escola Municipal Jardim das Flores",
-        period: { start: 2014, end: 2015 },
-        description:
-          "Estágio supervisionado na Educação Infantil e no 2º ano do Ensino Fundamental.",
+        kind: "study",
+        role: "Ensino Médio",
+        school: "Instituto Federal Catarinense · Campus Brusque",
+        period: { start: 2020, end: 2022 },
+        description: "Ensino Médio concluído em 2022.",
       },
     ],
   },
   projects: {
-    lead: "Percursos que nasceram das perguntas das crianças.",
+    lead: "Trabalhos apresentados durante a graduação.",
     allLabel: "Todos",
-    filters: ["Leitura", "Ciências", "Artes", "Família"],
+    filters: ["Estágio", "Educação Infantil", "Ciências", "Direitos da criança"],
     items: projects,
   },
   education: {
-    degree: {
-      kind: "Graduação",
-      title: "Licenciatura em Pedagogia",
-      institution: "Universidade Federal",
-      period: { start: 2011, end: 2014 },
-      note: "Trabalho de conclusão sobre o brincar como linguagem na Educação Infantil.",
-    },
-    coursesTitle: "Cursos complementares",
-    courses: [
-      { name: "Pós-graduação em Alfabetização e Letramento", hours: null, year: 2019 },
-      { name: "Abordagem Reggio Emilia na prática", hours: 40, year: 2023 },
-      { name: "BNCC na Educação Infantil", hours: 30, year: 2022 },
-      { name: "Educação inclusiva e TEA", hours: 60, year: 2021 },
-      { name: "Contação de histórias", hours: 20, year: 2020 },
-      { name: "Primeiros socorros na escola", hours: 8, year: 2024 },
+    degrees: [
+      {
+        kind: "Graduação em andamento",
+        title: "Pedagogia",
+        institution: "Centro Universitário de Brusque · UNIFEBE",
+        period: { start: 2024, end: null },
+        note: "Habilitação para atuar na Educação Infantil e nos Anos Iniciais do Ensino Fundamental.",
+      },
+      {
+        kind: "Ensino Médio",
+        title: "Instituto Federal Catarinense",
+        institution: "Campus Brusque",
+        period: { start: 2020, end: 2022 },
+        note: null,
+      },
+    ],
+    eventsTitle: "Eventos e oficinas",
+    events: [
+      { name: "Jogos para Alfabetização", kind: "Oficina", year: 2025 },
+      {
+        name: "Vivenciando literatura infantil em conexão com a natureza na Formação Continuada de Professores da Educação Básica",
+        kind: "Oficina",
+        year: 2025,
+      },
+      {
+        name: "Arquitetura escolar e a escola do amanhã: uma visão ampla",
+        kind: "Evento",
+        year: 2025,
+      },
+      {
+        name: "2ª Semana Acadêmica do Curso de Educação Especial e 10ª Semana de Acessibilidade e Inclusão",
+        kind: "Semana acadêmica",
+        year: 2024,
+      },
+      {
+        name: "A Inclusão da Pessoa com Deficiência — do trabalho social com famílias à inclusão no mundo do trabalho",
+        kind: "Palestra",
+        year: 2024,
+      },
+      {
+        name: "Práticas pedagógicas e sustentabilidade no fazer docente",
+        kind: "Semana acadêmica",
+        year: 2024,
+      },
     ],
   },
   contact: {
     title: "Vamos conversar?",
     text: "Estou aberta a novas oportunidades em escolas e a conversas com coordenações e famílias.",
     links: [
-      { kind: "email", label: "E-mail", href: "mailto:contato@gabrieli.com.br" },
-      { kind: "instagram", label: "Instagram", href: "https://instagram.com/" },
-      { kind: "linkedin", label: "LinkedIn", href: "https://linkedin.com/" },
+      { kind: "email", label: "E-mail", href: "mailto:gabrieliaparecidacunha123@gmail.com" },
+      { kind: "lattes", label: "Currículo Lattes", href: LATTES_URL },
     ],
   },
 };

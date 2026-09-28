@@ -24,7 +24,21 @@ test.describe("Página inicial", () => {
     await page.goto("/");
     const lastLetter = page.locator("[data-letter]").last();
     await expect(lastLetter).toHaveCSS("opacity", "1", { timeout: 5_000 });
-    await expect(page.locator("[data-count='24']")).toHaveText("24", { timeout: 5_000 });
+    await expect(page.locator("[data-count='4']")).toHaveText("4", { timeout: 5_000 });
+  });
+
+  test("contatos: e-mail e Lattes", async ({ page }) => {
+    await page.goto("/");
+    const contact = page.getByRole("region", { name: "Contato" });
+    await expect(contact.getByRole("link", { name: "E-mail" })).toHaveAttribute(
+      "href",
+      "mailto:gabrieliaparecidacunha123@gmail.com",
+    );
+    await expect(contact.getByRole("link", { name: "Currículo Lattes" })).toHaveAttribute(
+      "href",
+      "http://lattes.cnpq.br/0891095904029183",
+    );
+    await expect(contact.getByRole("link")).toHaveCount(2);
   });
 
   test("tem todas as seções", async ({ page }) => {
@@ -64,13 +78,13 @@ test.describe("Projetos", () => {
     const cards = page.locator("[data-card]");
     await expect(cards).toHaveCount(4);
 
-    await page.getByRole("button", { name: "Leitura", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Leitura", exact: true })).toHaveAttribute(
+    await page.getByRole("button", { name: "Ciências", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Ciências", exact: true })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
-    await expect(page.locator("[data-card]:visible")).toHaveCount(2);
-    await expect(page.locator("[data-card][data-id='horta']")).toBeHidden();
+    await expect(page.locator("[data-card]:visible")).toHaveCount(1);
+    await expect(page.locator("[data-card][data-id='eca']")).toBeHidden();
 
     await page.getByRole("button", { name: "Todos", exact: true }).click();
     await expect(page.locator("[data-card]:visible")).toHaveCount(4);
@@ -78,26 +92,39 @@ test.describe("Projetos", () => {
 
   test("abre e fecha o detalhe de um projeto", async ({ page }) => {
     await page.goto("/#projetos");
-    await page.getByRole("button", { name: "Ver projeto Pequenos cientistas" }).click();
-    const dialog = page.getByRole("dialog", { name: "Pequenos cientistas" });
+    await page
+      .getByRole("button", { name: "Ver projeto Revitalização do parque infantil" })
+      .click();
+    const dialog = page.getByRole("dialog", { name: "Revitalização do parque infantil" });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole("heading", { name: "Como foi feito" })).toBeVisible();
+    await expect(dialog.getByRole("heading", { name: "Autoria" })).toBeVisible();
     await expect(dialog.getByRole("button", { name: "Fechar" })).toBeFocused();
 
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
     await expect(
-      page.getByRole("button", { name: "Ver projeto Pequenos cientistas" }),
+      page.getByRole("button", { name: "Ver projeto Revitalização do parque infantil" }),
     ).toBeFocused();
   });
 
   test("abre direto pelo link ?projeto=", async ({ page }) => {
-    await page.goto("/?projeto=horta");
-    const dialog = page.getByRole("dialog", { name: "Horta na escola" });
+    await page.goto("/?projeto=estagio");
+    const dialog = page.getByRole("dialog", { name: "Vivências no Estágio Supervisionado I" });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByText("Mãe de aluno do Pré II")).toBeVisible();
+    await expect(
+      dialog.getByText("integração entre teoria e prática", { exact: false }).last(),
+    ).toBeVisible();
     await dialog.getByRole("button", { name: "Fechar" }).click();
     await expect(dialog).toBeHidden();
+  });
+
+  test("mostra só dados reais: sem etapas, galeria ou depoimento vazios", async ({ page }) => {
+    await page.goto("/?projeto=eca");
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("heading", { name: "Referência" })).toBeVisible();
+    await expect(dialog.getByRole("heading", { name: "Como foi feito" })).toHaveCount(0);
+    await expect(dialog.getByRole("heading", { name: "Galeria" })).toHaveCount(0);
+    await expect(dialog.locator("figure")).toHaveCount(0);
   });
 
   test("ignora projeto inexistente no link", async ({ page }) => {
@@ -135,8 +162,12 @@ test.describe("Movimento reduzido", () => {
     await page.goto("/");
     await expect(page.locator("html")).not.toHaveClass(/js-motion/);
     await expect(page.locator("[data-letter]").first()).toHaveCSS("opacity", "1");
-    await page.getByRole("button", { name: "Ver projeto Horta na escola" }).click();
-    const dialog = page.getByRole("dialog", { name: "Horta na escola" });
+    await page
+      .getByRole("button", { name: "Ver projeto ECA — Estatuto da Criança e do Adolescente" })
+      .click();
+    const dialog = page.getByRole("dialog", {
+      name: "ECA — Estatuto da Criança e do Adolescente",
+    });
     await expect(dialog).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();

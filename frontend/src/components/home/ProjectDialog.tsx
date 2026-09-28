@@ -17,6 +17,7 @@ type ProjectDialogProps = {
   /** Skip the opening morph (e.g. when opened from the URL on load). */
   instant: boolean;
   formatTags: (tags: string[]) => string;
+  formatAuthors: (authors: string[]) => string;
   formatStepNumber: (index: number) => string;
   onClosed: () => void;
 };
@@ -39,6 +40,7 @@ export function ProjectDialog({
   project,
   instant,
   formatTags,
+  formatAuthors,
   formatStepNumber,
   onClosed,
 }: ProjectDialogProps) {
@@ -229,7 +231,7 @@ export function ProjectDialog({
               color: palette.muted,
             }}
           >
-            <span>{project.group}</span>
+            <span>{project.kind}</span>
             <span>{project.year}</span>
           </Box>
           <Box
@@ -246,6 +248,23 @@ export function ProjectDialog({
           >
             {project.title}
           </Box>
+          {project.subtitle !== null && (
+            <Box
+              component="p"
+              sx={{
+                m: "0 0 1rem",
+                fontFamily: fonts.display,
+                fontWeight: 500,
+                fontSize: "clamp(1.2rem,2.4vw,1.45rem)",
+                lineHeight: 1.3,
+                letterSpacing: "-0.01em",
+                color: palette.ink,
+                textWrap: "pretty",
+              }}
+            >
+              {project.subtitle}
+            </Box>
+          )}
           <Box component="p" sx={{ m: 0, fontWeight: 800, fontSize: "1rem", color: palette.green }}>
             {formatTags(project.tags)}
           </Box>
@@ -266,142 +285,194 @@ export function ProjectDialog({
           >
             <div>
               <Box component="h3" sx={{ m: "0 0 0.6rem", fontWeight: 800, fontSize: "1rem" }}>
-                Objetivo
+                Autoria
+              </Box>
+              <Box component="p" sx={{ m: 0, fontSize: "1.02rem", lineHeight: 1.6 }}>
+                {formatAuthors(project.authors)}
+              </Box>
+            </div>
+            <div>
+              <Box component="h3" sx={{ m: "0 0 0.6rem", fontWeight: 800, fontSize: "1rem" }}>
+                Referência
               </Box>
               <Box
                 component="p"
                 sx={{
                   m: 0,
-                  fontFamily: fonts.display,
-                  fontWeight: 500,
-                  fontSize: "1.3rem",
-                  lineHeight: 1.4,
-                  letterSpacing: "-0.01em",
+                  fontSize: "0.95rem",
+                  lineHeight: 1.6,
+                  color: palette.muted,
                   textWrap: "pretty",
                 }}
               >
-                {project.goal}
+                {project.reference}
               </Box>
             </div>
-            <div>
-              <Box component="h3" sx={{ m: "0 0 0.3rem", fontWeight: 800, fontSize: "1rem" }}>
-                O que as crianças aprenderam e produziram
-              </Box>
-              <Box component="ul" sx={{ listStyle: "none", m: 0, p: 0 }}>
-                {project.learnings.map((learning) => (
+          </Box>
+
+          {(project.goal !== null || project.learnings.length > 0) && (
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,18rem),1fr))",
+                gap: "2rem 3rem",
+                mt: "3rem",
+              }}
+            >
+              {project.goal !== null && (
+                <div>
+                  <Box component="h3" sx={{ m: "0 0 0.6rem", fontWeight: 800, fontSize: "1rem" }}>
+                    Objetivo
+                  </Box>
                   <Box
-                    key={learning}
-                    component="li"
+                    component="p"
                     sx={{
-                      display: "flex",
-                      gap: "0.75rem",
-                      py: "0.65rem",
-                      borderBottom: `1px solid ${palette.hairlineSoft}`,
-                      fontSize: "1.02rem",
-                      lineHeight: 1.5,
+                      m: 0,
+                      fontFamily: fonts.display,
+                      fontWeight: 500,
+                      fontSize: "1.3rem",
+                      lineHeight: 1.4,
+                      letterSpacing: "-0.01em",
+                      textWrap: "pretty",
                     }}
                   >
+                    {project.goal}
+                  </Box>
+                </div>
+              )}
+              {project.learnings.length > 0 && (
+                <div>
+                  <Box component="h3" sx={{ m: "0 0 0.3rem", fontWeight: 800, fontSize: "1rem" }}>
+                    O que as crianças aprenderam e produziram
+                  </Box>
+                  <Box component="ul" sx={{ listStyle: "none", m: 0, p: 0 }}>
+                    {project.learnings.map((learning) => (
+                      <Box
+                        key={learning}
+                        component="li"
+                        sx={{
+                          display: "flex",
+                          gap: "0.75rem",
+                          py: "0.65rem",
+                          borderBottom: `1px solid ${palette.hairlineSoft}`,
+                          fontSize: "1.02rem",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          aria-hidden="true"
+                          sx={{
+                            flex: "none",
+                            mt: "0.55rem",
+                            width: "0.5rem",
+                            height: "0.5rem",
+                            backgroundColor: palette.coral,
+                            transform: "rotate(45deg)",
+                          }}
+                        />
+                        <span>{learning}</span>
+                      </Box>
+                    ))}
+                  </Box>
+                </div>
+              )}
+            </Box>
+          )}
+
+          {project.steps.length > 0 && (
+            <>
+              <Box component="h3" sx={sectionTitleSx}>
+                Como foi feito
+              </Box>
+              <Box
+                component="ol"
+                sx={{
+                  listStyle: "none",
+                  m: 0,
+                  p: 0,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,15rem),1fr))",
+                  gap: "1.5rem 2rem",
+                }}
+              >
+                {project.steps.map((step, index) => (
+                  <li key={step.title}>
                     <Box
-                      component="span"
                       aria-hidden="true"
                       sx={{
-                        flex: "none",
-                        mt: "0.55rem",
-                        width: "0.5rem",
-                        height: "0.5rem",
-                        backgroundColor: palette.coral,
-                        transform: "rotate(45deg)",
+                        fontFamily: fonts.display,
+                        fontWeight: 700,
+                        fontSize: "2.4rem",
+                        lineHeight: 1,
+                        letterSpacing: "-0.04em",
+                        color: palette.green,
+                      }}
+                    >
+                      {formatStepNumber(index)}
+                    </Box>
+                    <Box
+                      aria-hidden="true"
+                      sx={{
+                        width: "2rem",
+                        height: "4px",
+                        m: "0.7rem 0 0.9rem",
+                        backgroundColor: palette.sun,
                       }}
                     />
-                    <span>{learning}</span>
+                    <Box
+                      component="h4"
+                      sx={{ m: "0 0 0.35rem", fontWeight: 800, fontSize: "1.08rem" }}
+                    >
+                      {step.title}
+                    </Box>
+                    <Box
+                      component="p"
+                      sx={{
+                        m: 0,
+                        fontSize: "1rem",
+                        lineHeight: 1.6,
+                        color: palette.muted,
+                        textWrap: "pretty",
+                      }}
+                    >
+                      {step.description}
+                    </Box>
+                  </li>
+                ))}
+              </Box>
+            </>
+          )}
+
+          {project.gallery.length > 0 && (
+            <>
+              <Box component="h3" sx={sectionTitleSx}>
+                Galeria
+              </Box>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,14rem),1fr))",
+                  gap: "0.75rem",
+                }}
+              >
+                {project.gallery.map((photo) => (
+                  <Box
+                    key={photo.alt}
+                    sx={{
+                      position: "relative",
+                      aspectRatio: "4 / 3",
+                      borderRadius: "0.75rem",
+                      overflow: "hidden",
+                      backgroundColor: palette.paperDeep,
+                    }}
+                  >
+                    <PhotoSlot photo={photo} />
                   </Box>
                 ))}
               </Box>
-            </div>
-          </Box>
-
-          <Box component="h3" sx={sectionTitleSx}>
-            Como foi feito
-          </Box>
-          <Box
-            component="ol"
-            sx={{
-              listStyle: "none",
-              m: 0,
-              p: 0,
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,15rem),1fr))",
-              gap: "1.5rem 2rem",
-            }}
-          >
-            {project.steps.map((step, index) => (
-              <li key={step.title}>
-                <Box
-                  aria-hidden="true"
-                  sx={{
-                    fontFamily: fonts.display,
-                    fontWeight: 700,
-                    fontSize: "2.4rem",
-                    lineHeight: 1,
-                    letterSpacing: "-0.04em",
-                    color: palette.green,
-                  }}
-                >
-                  {formatStepNumber(index)}
-                </Box>
-                <Box
-                  aria-hidden="true"
-                  sx={{
-                    width: "2rem",
-                    height: "4px",
-                    m: "0.7rem 0 0.9rem",
-                    backgroundColor: palette.sun,
-                  }}
-                />
-                <Box component="h4" sx={{ m: "0 0 0.35rem", fontWeight: 800, fontSize: "1.08rem" }}>
-                  {step.title}
-                </Box>
-                <Box
-                  component="p"
-                  sx={{
-                    m: 0,
-                    fontSize: "1rem",
-                    lineHeight: 1.6,
-                    color: palette.muted,
-                    textWrap: "pretty",
-                  }}
-                >
-                  {step.description}
-                </Box>
-              </li>
-            ))}
-          </Box>
-
-          <Box component="h3" sx={sectionTitleSx}>
-            Galeria
-          </Box>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,14rem),1fr))",
-              gap: "0.75rem",
-            }}
-          >
-            {project.gallery.map((photo) => (
-              <Box
-                key={photo.alt}
-                sx={{
-                  position: "relative",
-                  aspectRatio: "4 / 3",
-                  borderRadius: "0.75rem",
-                  overflow: "hidden",
-                  backgroundColor: palette.paperDeep,
-                }}
-              >
-                <PhotoSlot photo={photo} />
-              </Box>
-            ))}
-          </Box>
+            </>
+          )}
 
           {project.testimonial !== null && (
             <Box

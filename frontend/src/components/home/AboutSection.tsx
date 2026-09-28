@@ -100,7 +100,7 @@ export function AboutSection({ about }: AboutSectionProps) {
           </div>
           <div data-reveal="">
             <Box component="h3" sx={{ m: "0 0 0.75rem", fontWeight: 800, fontSize: "1rem" }}>
-              Áreas de atuação
+              {about.areasTitle}
             </Box>
             <Box component="ul" sx={{ listStyle: "none", m: 0, p: 0, borderBottom: hairline }}>
               {about.areas.map((area) => (

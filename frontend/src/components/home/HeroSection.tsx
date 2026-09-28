@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 
-import type { Profile } from "@/models/profile";
+import type { Profile, Stat } from "@/models/profile";
 import { fonts, layout, palette } from "@/theme/theme";
 
 import { PhotoSlot } from "./PhotoSlot";
@@ -8,6 +8,7 @@ import { Shape } from "./Shape";
 
 type HeroSectionProps = {
   profile: Profile;
+  stats: Stat[];
 };
 
 const buttonBaseSx = {
@@ -21,7 +22,7 @@ const buttonBaseSx = {
   transition: "background 0.3s, transform 0.3s, box-shadow 0.3s, color 0.3s",
 } as const;
 
-export function HeroSection({ profile }: HeroSectionProps) {
+export function HeroSection({ profile, stats }: HeroSectionProps) {
   const { hero } = profile;
   return (
     <Box
@@ -230,13 +231,13 @@ export function HeroSection({ profile }: HeroSectionProps) {
             data-hero=""
             sx={{
               display: "grid",
-              gridTemplateColumns: "repeat(3,minmax(0,1fr))",
+              gridTemplateColumns: `repeat(${stats.length},minmax(0,1fr))`,
               gap: "1rem",
               maxWidth: "28rem",
               m: "3.25rem 0 0",
             }}
           >
-            {hero.stats.map((stat) => (
+            {stats.map((stat) => (
               <Box key={stat.label} sx={{ display: "flex", flexDirection: "column-reverse" }}>
                 <Box
                   component="dt"
@@ -263,11 +264,6 @@ export function HeroSection({ profile }: HeroSectionProps) {
                   }}
                 >
                   <span data-count={stat.value}>{stat.value}</span>
-                  {stat.suffix !== "" && (
-                    <Box component="span" sx={{ color: palette.coral }}>
-                      {stat.suffix}
-                    </Box>
-                  )}
                 </Box>
               </Box>
             ))}
