@@ -16,14 +16,13 @@ build/
 # TanStack Router — fully generated, regenerated on `bun run dev` / `bun run build`
 frontend/src/routeTree.gen.ts
 
-# Prisma
-backend/generated/
+# Playwright
+test-results/
+playwright-report/
 
 # Logs
 *.log
 npm-debug.log*
-# Structured external-call logs (ADR-0013) — runtime artifacts, never committed.
-backend/logs/
 
 # Editor / OS
 .vscode/

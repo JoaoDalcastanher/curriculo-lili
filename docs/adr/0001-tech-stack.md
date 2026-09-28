@@ -1,6 +1,6 @@
 # ADR-0001: Core Technology Stack
 
-**Status:** Accepted  
+**Status:** Accepted — backend half superseded by ADR-0014 in this project  
 **Date:** 2026-06-05
 
 ---
@@ -8,6 +8,7 @@
 ## Context
 
 New projects in this organization need a standard, agreed-upon technology stack that enables:
+
 - Type-safe, end-to-end development
 - Fast iteration with good DX
 - Mobile-first responsive UIs
@@ -21,23 +22,23 @@ The choices below reflect lessons from existing projects and current team expert
 
 ### Frontend
 
-| Concern | Choice | Rationale |
-|---|---|---|
-| Framework | TanStack Start | SSR/SSG + full-stack, file-based routing, no framework lock-in |
-| Routing | TanStack Router | Type-safe routes, search params, nested layouts |
-| Server state | TanStack Query | Mutations, cache invalidation, optimistic updates |
-| Tables | TanStack Table | Headless, composable, works with any UI library |
+| Concern       | Choice                  | Rationale                                                                                     |
+| ------------- | ----------------------- | --------------------------------------------------------------------------------------------- |
+| Framework     | TanStack Start          | SSR/SSG + full-stack, file-based routing, no framework lock-in                                |
+| Routing       | TanStack Router         | Type-safe routes, search params, nested layouts                                               |
+| Server state  | TanStack Query          | Mutations, cache invalidation, optimistic updates                                             |
+| Tables        | TanStack Table          | Headless, composable, works with any UI library                                               |
 | UI components | Material UI (preferred) | Team familiarity, extensive component library; not mandatory — projects may swap if justified |
-| Styling | MUI `sx` prop + theme | Consistent theming, responsive via breakpoints |
+| Styling       | MUI `sx` prop + theme   | Consistent theming, responsive via breakpoints                                                |
 
 ### Backend
 
-| Concern | Choice | Rationale |
-|---|---|---|
-| Runtime | Bun | See ADR-0002 |
-| API layer | tRPC | End-to-end type safety between frontend and backend, no code-gen step |
-| ORM | Prisma (recommended) | See ADR-0004 |
-| Auth | Session-based | Credentials stay in the backend; see ADR-0012 |
+| Concern   | Choice               | Rationale                                                             |
+| --------- | -------------------- | --------------------------------------------------------------------- |
+| Runtime   | Bun                  | See ADR-0002                                                          |
+| API layer | tRPC                 | End-to-end type safety between frontend and backend, no code-gen step |
+| ORM       | Prisma (recommended) | See ADR-0004                                                          |
+| Auth      | Session-based        | Credentials stay in the backend; see ADR-0012                         |
 
 ### API Contract
 

@@ -21,6 +21,8 @@ const muiNoExternal = [
     : []),
 ];
 
+// Static site (ADR-0014): every page is prerendered to plain HTML at build time into
+// dist/client, which `server.ts` serves on Railway. No backend, no runtime SSR.
 export default defineConfig({
   ssr: {
     noExternal: muiNoExternal,
@@ -36,7 +38,7 @@ export default defineConfig({
       projects: [path.resolve(__dirname, "./tsconfig.json")],
     }) as PluginOption,
     tanstackStart({
-      // Add real routes here once the page list is known — keeps prerendering accurate.
+      prerender: { enabled: true, crawlLinks: true },
       pages: [{ path: "/" }],
     }) as PluginOption,
     react() as PluginOption,
@@ -47,15 +49,5 @@ export default defineConfig({
   server: {
     port: 3000,
     strictPort: true,
-    proxy: {
-      "/api": {
-        target: process.env.VITE_API_URL || "http://localhost:3001",
-        changeOrigin: true,
-      },
-    },
-  },
-  preview: {
-    port: process.env.PORT ? parseInt(process.env.PORT) : 4173,
-    host: "0.0.0.0",
   },
 });

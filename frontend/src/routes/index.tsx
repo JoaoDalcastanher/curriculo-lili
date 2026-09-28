@@ -1,29 +1,41 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Box, Button, Container, Stack, Typography } from "@mui/material";
+import { Box } from "@mui/material";
+import { createFileRoute } from "@tanstack/react-router";
+
+import { AboutSection } from "@/components/home/AboutSection";
+import { ContactSection } from "@/components/home/ContactSection";
+import { EducationSection } from "@/components/home/EducationSection";
+import { HeroSection } from "@/components/home/HeroSection";
+import { SiteFooter } from "@/components/home/SiteFooter";
+import { SiteHeader } from "@/components/home/SiteHeader";
+import { TimelineSection } from "@/components/home/TimelineSection";
+import { navItems } from "@/content/navigation";
+import { profile } from "@/content/profile";
+import { ProfileService } from "@/services/ProfileService";
+import { getCurrentYear } from "@/utils/datetime";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-// SUBSTITUA — esta é uma landing page provisória do template base.
-// Construa a homepage real aqui assim que a primeira feature do projeto existir.
+const profileService = new ProfileService(profile);
+
 function HomePage() {
+  const data = profileService.getProfile();
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 4, sm: 8 } }}>
-      <Stack spacing={3}>
-        <Typography variant="h4" component="h1">
-          O template base está rodando
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          O frontend (TanStack Start) está conectado ao backend (Bun + tRPC) através
-          desta página. Substitua-a pela homepage real assim que a primeira feature existir.
-        </Typography>
-        <Box>
-          <Button component={Link} to="/example" variant="contained">
-            Ver a página de exemplo do tRPC
-          </Button>
-        </Box>
-      </Stack>
-    </Container>
+    <Box sx={{ minHeight: "100vh", overflowX: "clip" }}>
+      <SiteHeader name={data.name} items={navItems} />
+      <Box component="main">
+        <HeroSection
+          profile={data}
+          stats={profileService.getStats()}
+          initials={profileService.getInitials()}
+        />
+        <AboutSection profile={data} />
+        <TimelineSection experiences={profileService.getExperiences()} />
+        <EducationSection education={profileService.getEducation()} />
+        <ContactSection name={data.name} contacts={data.contacts} />
+      </Box>
+      <SiteFooter fullName={data.fullName} year={getCurrentYear()} />
+    </Box>
   );
 }

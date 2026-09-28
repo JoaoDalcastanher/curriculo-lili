@@ -3,6 +3,7 @@
 ## Pre-coding Checklist (MANDATORY — do this before every implementation)
 
 Before writing any code, verify each item:
+
 1. Read `docs/adr/` — find at least one ADR that applies to the work. If you cannot identify a relevant ADR, ask the user before proceeding.
 2. Read all files in `docs/policies/` and apply every enforcement rule.
 3. Read the relevant file in `docs/features/` for the feature being modified (if it exists).
@@ -18,7 +19,7 @@ Before writing any code, verify each item:
 When creating a **new project from scratch** — before writing any code, creating any files, or making any decisions — always stop and ask:
 
 > "Este projeto precisa suportar inglês, ou posso desenvolver tudo em português?"
-> *(Does this project need to support English, or can I develop everything in Portuguese?)*
+> _(Does this project need to support English, or can I develop everything in Portuguese?)_
 
 Wait for the answer. Then document the decision in the README under **Linguagem / Language** before proceeding with anything else.
 
@@ -37,6 +38,7 @@ Rules that follow from the answer:
 The commit rule depends on the context Claude is running in:
 
 **Cloud sessions** (claude.ai/code, GitHub Actions, or any remote/automated environment):
+
 - Claude **may commit and push autonomously**, but **only to a non-main branch**.
 - Every commit goes to a feature or review branch — never directly to `main`.
 - The branch is opened for the developer to review and merge.
@@ -47,6 +49,7 @@ The commit rule depends on the context Claude is running in:
   The developer's name and email come from the session context, their GitHub profile, or `docs/ai_context.md` if defined in the project.
 
 **IDE sessions** (VS Code extension, JetBrains plugin, or any local developer session):
+
 - Claude **must never commit without explicit developer approval**.
 - Present the plan, list the files that will change, and wait for a clear "go ahead" before writing or committing anything.
 - When the developer approves a commit, still add yourself as a co-author if the work was collaborative.
@@ -75,35 +78,32 @@ The commit rule depends on the context Claude is running in:
 
 ## Architecture Cheatsheet
 
-| Layer | Lives in | Rule |
-|---|---|---|
-| Router / Controller | `backend/src/routers/` | Validate input, call service, return result. No business logic. |
-| Service | `backend/src/services/` | All business logic and orchestration. No ORM calls. |
-| Repository | `backend/src/repositories/` | All data access. Returns named models from `/model`. |
-| Domain models | `backend/src/model/` | Named types only. No anonymous inline shapes at boundaries. |
-| Frontend models | `frontend/src/models/` | Reusable domain/UI types. Never defined inside pages/components. |
-| Date utilities | `backend/src/utils/dateUtils.ts`, `frontend/src/utils/datetime.ts` | All date/time logic. Never inline. |
-| Env config | `backend/src/config/env.ts` | All env var reads and defaults. No `process.env` elsewhere. |
+This project is a **frontend-only static site** (ADR-0014). There is no backend, database,
+auth or logging. Backend rules from the base template do not apply here.
+
+| Concern                 | Lives in                                        | Rule                                                                |
+| ----------------------- | ----------------------------------------------- | ------------------------------------------------------------------- |
+| Site content (all copy) | `frontend/src/content/`                         | The only place personal text lives. Components never hardcode it.   |
+| Domain / UI models      | `frontend/src/models/`                          | Reusable types. Never defined inside pages/components (Policy 002). |
+| Presentation logic      | `frontend/src/services/`                        | Classes (e.g. `ProfileService`). Pages only render.                 |
+| Components              | `frontend/src/components/`                      | Pure rendering from props.                                          |
+| Theme                   | `frontend/src/theme/theme.ts`                   | All colors and fonts.                                               |
+| Date utilities          | `frontend/src/utils/datetime.ts`                | All date/time logic. Never inline.                                  |
+| Static server           | `frontend/server.ts` + `frontend/config/env.ts` | Serves `dist/client` on Railway. Env reads only in `env.ts`.        |
 
 ---
 
 ## ADR Index (read before touching the relevant concern)
 
-| ADR | Topic |
-|---|---|
-| 0001 | Tech stack (TanStack, tRPC, MUI, session auth) |
-| 0002 | Bun as runtime and package manager |
-| 0003 | MVC architecture and DDD |
-| 0004 | ORM choice (Prisma recommended) |
-| 0005 | Repository classes and named models |
-| 0006 | Responsive layout — no fixed pixel widths |
-| 0007 | Multi-tenant and template-first architecture |
-| 0008 | Everything is env-configurable |
-| 0009 | Bun workers for horizontal scalability |
-| 0010 | Testing requirements (unit, integration, E2E) |
-| 0011 | Datetime conventions |
-| 0012 | Token handling (session auth + CSRF) |
-| 0013 | Structured logging of external calls (Winston, file-based, /admin/logs) |
+| ADR  | Topic                                                                           |
+| ---- | ------------------------------------------------------------------------------- |
+| 0001 | Tech stack (TanStack, MUI) — backend half superseded by 0014                    |
+| 0002 | Bun as runtime and package manager                                              |
+| 0006 | Responsive layout — no fixed pixel widths                                       |
+| 0008 | Everything is env-configurable                                                  |
+| 0010 | Testing requirements (unit + E2E)                                               |
+| 0011 | Datetime conventions                                                            |
+| 0014 | Frontend-only static site (supersedes 0003, 0004, 0005, 0007, 0009, 0012, 0013) |
 
 ---
 
