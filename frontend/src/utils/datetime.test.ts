@@ -1,65 +1,51 @@
 import { describe, expect, test } from "bun:test";
 
-import {
-  formatPeriod,
-  formatYearMonth,
-  getCurrentYear,
-  parseYearMonth,
-  yearMonthSortKey,
-  yearsSince,
-} from "./datetime";
+import { compareYearRangesDesc, formatYearRange, getCurrentYear } from "./datetime";
 
-// 2026-01-01T01:00Z is still 2025-12-31 in São Paulo — guards the timezone boundary.
-const NEW_YEAR_UTC = new Date("2026-01-01T01:00:00Z");
-
-describe("parseYearMonth", () => {
-  test("parses YYYY-MM", () => {
-    expect(parseYearMonth("2019-03")).toEqual({ year: 2019, month: 3 });
-  });
-
-  test("rejects malformed values and invalid months", () => {
-    expect(parseYearMonth("2019-3")).toBeNull();
-    expect(parseYearMonth("2019-13")).toBeNull();
-    expect(parseYearMonth("março")).toBeNull();
-  });
-});
-
-describe("formatting", () => {
-  test("formats a year-month in Portuguese", () => {
-    expect(formatYearMonth("2019-03")).toBe("mar 2019");
-    expect(formatYearMonth("2020-12")).toBe("dez 2020");
-  });
-
-  test("returns invalid input untouched", () => {
-    expect(formatYearMonth("em breve")).toBe("em breve");
-  });
-
-  test("formats closed and ongoing periods", () => {
-    expect(formatPeriod("2018-02", "2020-12")).toBe("fev 2018 — dez 2020");
-    expect(formatPeriod("2021-02", null)).toBe("fev 2021 — atual");
-  });
-});
-
-describe("yearsSince", () => {
-  test("counts whole years in the app timezone", () => {
-    expect(yearsSince("2016-02", new Date("2026-09-28T12:00:00Z"))).toBe(10);
-    expect(yearsSince("2016-12", new Date("2026-09-28T12:00:00Z"))).toBe(9);
-  });
-
+describe("getCurrentYear", () => {
   test("uses São Paulo time at the year boundary", () => {
-    expect(getCurrentYear(NEW_YEAR_UTC)).toBe(2025);
-    expect(yearsSince("2025-01", NEW_YEAR_UTC)).toBe(0);
-  });
-
-  test("never goes negative or breaks on bad input", () => {
-    expect(yearsSince("2099-01", NEW_YEAR_UTC)).toBe(0);
-    expect(yearsSince("???", NEW_YEAR_UTC)).toBe(0);
+    // 2026-01-01T01:00Z is still 2025-12-31 in São Paulo.
+    expect(getCurrentYear(new Date("2026-01-01T01:00:00Z"))).toBe(2025);
+    expect(getCurrentYear(new Date("2026-01-01T12:00:00Z"))).toBe(2026);
   });
 });
 
-describe("yearMonthSortKey", () => {
-  test("orders chronologically with ongoing last", () => {
-    expect(yearMonthSortKey("2019-03")).toBeLessThan(yearMonthSortKey("2019-04"));
-    expect(yearMonthSortKey(null)).toBeGreaterThan(yearMonthSortKey("2999-12"));
+describe("formatYearRange", () => {
+  test("formats closed and ongoing ranges", () => {
+    expect(formatYearRange({ start: 2018, end: 2021 })).toBe("2018 — 2021");
+    expect(formatYearRange({ start: 2021, end: null })).toBe("2021 — hoje");
+  });
+
+  test("accepts a custom ongoing label", () => {
+    expect(formatYearRange({ start: 2024, end: null }, "em andamento")).toBe("2024 — em andamento");
+  });
+
+  test("collapses a single-year range", () => {
+    expect(formatYearRange({ start: 2025, end: 2025 })).toBe("2025");
+  });
+});
+
+describe("compareYearRangesDesc", () => {
+  const sort = (ranges: { start: number; end: number | null }[]) =>
+    [...ranges].sort(compareYearRangesDesc).map((range) => `${range.start}-${range.end}`);
+
+  test("puts ongoing ranges first, the most recently started on top", () => {
+    expect(
+      sort([
+        { start: 2020, end: 2022 },
+        { start: 2024, end: null },
+        { start: 2026, end: null },
+      ]),
+    ).toEqual(["2026-null", "2024-null", "2020-2022"]);
+  });
+
+  test("orders closed ranges by end year, then start year", () => {
+    expect(
+      sort([
+        { start: 2015, end: 2018 },
+        { start: 2014, end: 2021 },
+        { start: 2018, end: 2021 },
+      ]),
+    ).toEqual(["2018-2021", "2014-2021", "2015-2018"]);
   });
 });

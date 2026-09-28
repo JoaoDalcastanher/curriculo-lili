@@ -1,297 +1,315 @@
-import ArrowDownwardRoundedIcon from "@mui/icons-material/ArrowDownwardRounded";
-import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
-import { Box, Button, Container, Stack, Typography } from "@mui/material";
-import { keyframes } from "@mui/material/styles";
+import { Box } from "@mui/material";
 
 import type { Profile, Stat } from "@/models/profile";
-import { fonts, palette } from "@/theme/theme";
+import { fonts, layout, palette } from "@/theme/theme";
 
-import { Decoration } from "./Decoration";
-
-const rise = keyframes`
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-const draw = keyframes`
-  from { stroke-dashoffset: 400; }
-  to { stroke-dashoffset: 0; }
-`;
-
-const morph = keyframes`
-  0%, 100% { border-radius: 58% 42% 55% 45% / 48% 58% 42% 52%; }
-  50% { border-radius: 44% 56% 42% 58% / 58% 44% 56% 42%; }
-`;
+import { PhotoSlot } from "./PhotoSlot";
+import { Shape } from "./Shape";
 
 type HeroSectionProps = {
   profile: Profile;
   stats: Stat[];
-  initials: string;
 };
 
-function riseIn(delayMs: number) {
-  return { animation: `${rise} 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) ${delayMs}ms both` };
-}
+const buttonBaseSx = {
+  display: "inline-flex",
+  alignItems: "center",
+  minHeight: "3.25rem",
+  px: "1.5rem",
+  borderRadius: "0.7rem",
+  fontWeight: 800,
+  fontSize: "1rem",
+  transition: "background 0.3s, transform 0.3s, box-shadow 0.3s, color 0.3s",
+} as const;
 
-function Portrait({ profile, initials }: Pick<HeroSectionProps, "profile" | "initials">) {
+export function HeroSection({ profile, stats }: HeroSectionProps) {
+  const { hero } = profile;
   return (
     <Box
+      component="section"
+      id="inicio"
+      aria-label="Início"
       sx={{
         position: "relative",
-        width: "100%",
-        maxWidth: 440,
-        aspectRatio: "1 / 1",
-        mx: "auto",
-        ...riseIn(300),
+        overflow: "clip",
+        pt: `calc(${layout.headerHeight} + clamp(2.5rem,7vw,5.5rem))`,
+        pb: "clamp(4.5rem,9vw,8rem)",
       }}
     >
-      <Decoration shape="dots" color={palette.sage} size={96} sx={{ top: -18, left: -12 }} />
-      <Decoration
-        shape="star"
-        color={palette.mustard}
-        size={62}
-        rotate={12}
-        sx={{ top: "6%", right: "2%", zIndex: 2 }}
+      <Shape
+        kind="sparkle"
+        color={palette.coral}
+        size="2.25rem"
+        parallax={0.2}
+        placement={{ top: "7%", right: "6%" }}
       />
-      <Decoration
-        shape="ring"
-        color={palette.sky}
-        size={80}
-        sx={{ bottom: "4%", left: "-4%", zIndex: 2 }}
+      <Shape
+        kind="squiggle"
+        color={palette.peach}
+        size="11rem"
+        parallax={0.1}
+        placement={{ bottom: "7%", left: "6%" }}
       />
+
       <Box
         sx={{
-          position: "absolute",
-          inset: "6%",
-          backgroundColor: palette.terracottaSoft,
-          animation: `${morph} 14s ease-in-out infinite`,
-          transform: "rotate(-6deg) translate(4%, 4%)",
-        }}
-      />
-      <Box
-        sx={{
-          position: "absolute",
-          inset: "6%",
-          overflow: "hidden",
+          position: "relative",
+          zIndex: 1,
+          maxWidth: layout.maxWidth,
+          mx: "auto",
+          px: layout.gutter,
           display: "grid",
-          placeItems: "center",
-          background: `linear-gradient(145deg, ${palette.terracotta} 0%, #E58A5E 55%, ${palette.mustard} 100%)`,
-          animation: `${morph} 14s ease-in-out infinite reverse`,
-          boxShadow: "0 30px 60px -25px rgba(210, 100, 63, 0.55)",
+          gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,24rem),1fr))",
+          gap: "clamp(3.5rem,6vw,5rem)",
+          alignItems: "center",
         }}
       >
-        {profile.photoUrl === null ? (
-          <Typography
-            aria-hidden
+        <div>
+          <Box
+            component="p"
+            data-hero=""
             sx={{
-              fontFamily: fonts.display,
-              fontStyle: "italic",
-              fontWeight: 800,
-              fontSize: { xs: "9rem", md: "12rem" },
-              color: "rgba(255,255,255,0.92)",
+              m: "0 0 0.2rem",
+              fontFamily: fonts.hand,
+              fontWeight: 700,
+              fontSize: "2rem",
               lineHeight: 1,
+              color: palette.green,
             }}
           >
-            {initials}
-          </Typography>
-        ) : (
+            {hero.greeting}
+          </Box>
           <Box
-            component="img"
-            src={profile.photoUrl}
-            alt={`Foto de ${profile.name}`}
-            sx={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        )}
-      </Box>
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: "10%",
-          right: { xs: "0%", md: "-6%" },
-          zIndex: 3,
-          px: 2.5,
-          py: 1.25,
-          borderRadius: "14px",
-          backgroundColor: palette.white,
-          boxShadow: "0 18px 40px -18px rgba(30, 42, 59, 0.35)",
-          transform: "rotate(3deg)",
-        }}
-      >
-        <Typography
-          sx={{ fontFamily: fonts.hand, fontSize: "1.6rem", lineHeight: 1.1, color: palette.ink }}
-        >
-          {`${profile.title} ✏️`}
-        </Typography>
-      </Box>
-    </Box>
-  );
-}
-
-export function HeroSection({ profile, stats, initials }: HeroSectionProps) {
-  return (
-    <Box
-      id="inicio"
-      component="section"
-      sx={{
-        position: "relative",
-        overflow: "hidden",
-        pt: { xs: 6, md: 10 },
-        pb: { xs: 8, md: 12 },
-      }}
-    >
-      <Decoration
-        shape="squiggle"
-        color={palette.sageSoft}
-        size={180}
-        rotate={-8}
-        sx={{ top: 40, left: "-60px" }}
-      />
-      <Decoration
-        shape="circle"
-        color={palette.mustardSoft}
-        size={260}
-        sx={{ bottom: -120, right: "38%", opacity: 0.7 }}
-      />
-      <Container maxWidth="lg" sx={{ position: "relative" }}>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1.15fr 0.85fr" },
-            gap: { xs: 6, md: 8 },
-            alignItems: "center",
-          }}
-        >
-          <Stack spacing={3.5}>
-            <Stack
-              direction="row"
-              spacing={1}
-              alignItems="center"
-              sx={{ color: palette.inkSoft, ...riseIn(0) }}
+            component="h1"
+            aria-label={`${profile.name}, ${profile.title}`}
+            sx={{
+              m: 0,
+              fontFamily: fonts.display,
+              fontWeight: 800,
+              fontSize: "clamp(4rem,14.5vw,8.5rem)",
+              lineHeight: 0.92,
+              letterSpacing: "-0.045em",
+              color: palette.ink,
+            }}
+          >
+            <Box
+              component="span"
+              sx={{ position: "relative", display: "inline-block", pb: "0.12em" }}
             >
-              <PlaceOutlinedIcon fontSize="small" />
-              <Typography variant="overline" sx={{ lineHeight: 1 }}>
-                {`${profile.title} · ${profile.location}`}
-              </Typography>
-            </Stack>
-
-            <Typography
-              variant="h1"
-              component="h1"
-              sx={{ fontSize: { xs: "4.5rem", sm: "6rem", md: "7.5rem" }, ...riseIn(100) }}
-            >
-              Oi, eu sou a{" "}
+              <Box component="span" aria-hidden="true" sx={{ display: "inline-flex" }}>
+                {Array.from(profile.name).map((letter, index) => (
+                  <Box
+                    key={`${letter}-${index}`}
+                    component="span"
+                    data-letter=""
+                    sx={{ display: "inline-block" }}
+                  >
+                    {letter}
+                  </Box>
+                ))}
+              </Box>
               <Box
-                component="span"
+                component="svg"
+                aria-hidden="true"
+                viewBox="0 0 400 30"
+                preserveAspectRatio="none"
                 sx={{
-                  position: "relative",
-                  display: "inline-block",
-                  color: palette.terracotta,
-                  fontStyle: "italic",
+                  position: "absolute",
+                  left: 0,
+                  bottom: "-0.04em",
+                  width: "100%",
+                  height: "0.2em",
+                  overflow: "visible",
                 }}
               >
-                {profile.name}
+                <path
+                  data-underline=""
+                  d="M5 20 C 90 8, 210 4, 395 13"
+                  pathLength={1}
+                  fill="none"
+                  stroke={palette.sun}
+                  strokeWidth="9"
+                  strokeLinecap="round"
+                  style={{ strokeDasharray: 1 }}
+                />
+              </Box>
+            </Box>
+            <Box
+              component="span"
+              aria-hidden="true"
+              data-hero=""
+              sx={{
+                display: "block",
+                mt: "0.28em",
+                fontSize: "0.4em",
+                fontWeight: 500,
+                letterSpacing: "-0.025em",
+                color: palette.green,
+              }}
+            >
+              {profile.title}
+            </Box>
+          </Box>
+          <Box
+            component="p"
+            data-hero=""
+            sx={{ m: "1rem 0 0", fontWeight: 700, fontSize: "1rem", color: palette.muted }}
+          >
+            {hero.specialty}
+          </Box>
+          <Box
+            component="p"
+            data-hero=""
+            sx={{
+              m: "1.75rem 0 0",
+              maxWidth: "28rem",
+              fontFamily: fonts.display,
+              fontWeight: 500,
+              fontSize: "clamp(1.3rem,2.4vw,1.6rem)",
+              lineHeight: 1.35,
+              letterSpacing: "-0.01em",
+              color: palette.ink,
+              textWrap: "pretty",
+            }}
+          >
+            {hero.tagline}
+          </Box>
+          <Box
+            data-hero=""
+            sx={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", mt: "2.25rem" }}
+          >
+            <Box
+              component="a"
+              href="#projetos"
+              sx={{
+                ...buttonBaseSx,
+                gap: "0.65rem",
+                backgroundColor: palette.green,
+                color: palette.white,
+                "&:hover": {
+                  backgroundColor: palette.ink,
+                  color: palette.white,
+                  transform: "translateY(-3px)",
+                  boxShadow: "0 16px 28px -18px rgba(34,51,44,0.9)",
+                },
+              }}
+            >
+              Conheça meus projetos
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </Box>
+            <Box
+              component="a"
+              href="#contato"
+              sx={{
+                ...buttonBaseSx,
+                border: `2px solid ${palette.green}`,
+                color: palette.green,
+                "&:hover": {
+                  backgroundColor: palette.mint,
+                  color: palette.ink,
+                  transform: "translateY(-3px)",
+                },
+              }}
+            >
+              Entre em contato
+            </Box>
+          </Box>
+          <Box
+            component="dl"
+            data-hero=""
+            sx={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${stats.length},minmax(0,1fr))`,
+              gap: "1rem",
+              maxWidth: "28rem",
+              m: "3.25rem 0 0",
+            }}
+          >
+            {stats.map((stat) => (
+              <Box key={stat.label} sx={{ display: "flex", flexDirection: "column-reverse" }}>
                 <Box
-                  component="svg"
-                  aria-hidden
-                  viewBox="0 0 300 30"
-                  preserveAspectRatio="none"
+                  component="dt"
                   sx={{
-                    position: "absolute",
-                    left: "-4%",
-                    bottom: "-0.12em",
-                    width: "108%",
-                    height: "0.28em",
-                    overflow: "visible",
+                    mt: "0.45rem",
+                    fontSize: "0.92rem",
+                    fontWeight: 700,
+                    lineHeight: 1.3,
+                    color: palette.muted,
                   }}
                 >
-                  <path
-                    d="M4 20 C 60 4, 120 28, 180 14 S 270 8, 296 16"
-                    fill="none"
-                    stroke={palette.mustard}
-                    strokeWidth="9"
-                    strokeLinecap="round"
-                    style={{ strokeDasharray: 400, animation: `${draw} 1.4s ease-out 700ms both` }}
-                  />
+                  {stat.label}
+                </Box>
+                <Box
+                  component="dd"
+                  sx={{
+                    m: 0,
+                    fontFamily: fonts.display,
+                    fontWeight: 700,
+                    fontSize: "clamp(2.4rem,5vw,3.25rem)",
+                    lineHeight: 1,
+                    letterSpacing: "-0.04em",
+                    color: palette.ink,
+                  }}
+                >
+                  <span data-count={stat.value}>{stat.value}</span>
                 </Box>
               </Box>
-            </Typography>
+            ))}
+          </Box>
+        </div>
 
-            <Typography
-              sx={{
-                fontFamily: fonts.display,
-                fontStyle: "italic",
-                fontSize: { xs: "1.35rem", md: "1.6rem" },
-                lineHeight: 1.45,
-                color: palette.inkSoft,
-                maxWidth: "32ch",
-                ...riseIn(200),
-              }}
-            >
-              {profile.tagline}
-            </Typography>
-
-            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1.5, ...riseIn(300) }}>
-              <Button
-                variant="contained"
-                size="large"
-                href="#trajetoria"
-                endIcon={<ArrowDownwardRoundedIcon />}
-              >
-                Conheça minha trajetória
-              </Button>
-              <Button
-                size="large"
-                href="#contato"
-                sx={{
-                  color: palette.ink,
-                  border: `2px solid ${palette.ink}`,
-                  "&:hover": { backgroundColor: palette.ink, color: palette.white },
-                }}
-              >
-                Vamos conversar
-              </Button>
-            </Stack>
-
-            <Box
-              component="dl"
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: { xs: 3, md: 5 },
-                m: 0,
-                pt: 2,
-                ...riseIn(450),
-              }}
-            >
-              {stats.map((stat) => (
-                <Box key={stat.label} sx={{ display: "flex", flexDirection: "column-reverse" }}>
-                  <Typography
-                    component="dt"
-                    sx={{ color: palette.inkSoft, fontWeight: 700, fontSize: "0.95rem" }}
-                  >
-                    {stat.label}
-                  </Typography>
-                  <Typography
-                    component="dd"
-                    sx={{
-                      m: 0,
-                      fontFamily: fonts.display,
-                      fontWeight: 800,
-                      fontSize: "2.6rem",
-                      lineHeight: 1.1,
-                      color: palette.ink,
-                    }}
-                  >
-                    {stat.value}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Stack>
-
-          <Portrait profile={profile} initials={initials} />
+        <Box
+          data-hero-photo=""
+          sx={{
+            position: "relative",
+            width: "min(100%,30rem)",
+            mx: "auto",
+            aspectRatio: "1 / 1.1",
+          }}
+        >
+          <Box
+            data-blob=""
+            sx={{
+              position: "absolute",
+              inset: "-6% -8% -4% -6%",
+              backgroundColor: palette.mint,
+              borderRadius: "42% 58% 63% 37% / 45% 40% 60% 55%",
+            }}
+          />
+          <Box
+            sx={{
+              position: "absolute",
+              inset: "12% 0% 0% 14%",
+              backgroundColor: palette.sun,
+              borderRadius: "60% 40% 45% 55% / 55% 50% 50% 45%",
+              transform: "rotate(-8deg)",
+            }}
+          />
+          <Box
+            sx={{
+              position: "absolute",
+              inset: "3% 8% 7% 3%",
+              overflow: "hidden",
+              backgroundColor: palette.paperDeep,
+              borderRadius: "55% 45% 50% 50% / 50% 56% 44% 50%",
+            }}
+          >
+            <PhotoSlot photo={hero.photo} eager />
+          </Box>
         </Box>
-      </Container>
+      </Box>
     </Box>
   );
 }

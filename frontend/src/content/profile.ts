@@ -1,109 +1,268 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // CONTEÚDO DO SITE — edite aqui.
 // Todo o texto que aparece na página vem deste arquivo; os componentes não têm
-// nenhum conteúdo fixo (ADR-0008). Os textos abaixo são PROVISÓRIOS: troque pelos
-// dados reais da Lili.
+// conteúdo fixo (ADR-0008). Fonte: Currículo Lattes da Gabrieli
+// (http://lattes.cnpq.br/0891095904029183), atualizado em 29/07/2026.
+//
+// Fotos: coloque os arquivos em `frontend/public/fotos/` e troque `src: null`
+// por `src: "/fotos/nome-do-arquivo.jpg"`. Enquanto `src` for null, o site
+// mostra um espaço reservado com a dica (`hint`).
+// Projetos: use fotos de mãos, materiais, trabalhos e ambientes, ou crianças
+// de costas — nunca rostos de alunos identificáveis.
+//
+// Detalhes dos projetos (objetivo, etapas, aprendizados, galeria, depoimento)
+// ficam escondidos enquanto estiverem vazios — preencha quando quiser mostrar.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { Profile } from "@/models/profile";
+import type { Photo, Profile, Project } from "@/models/profile";
+
+const LATTES_URL = "http://lattes.cnpq.br/0891095904029183";
+
+function placeholder(hint: string, alt: string): Photo {
+  return { src: null, alt, hint };
+}
+
+const projects: Project[] = [
+  {
+    id: "estagio",
+    title: "Vivências no Estágio Supervisionado I",
+    subtitle: "Integração entre teoria e prática e a construção da identidade docente",
+    kind: "Apresentação em congresso",
+    year: 2026,
+    tags: ["Estágio"],
+    authors: ["CUNHA, G. A.", "BRUNS, Juliana Pedroso", "KISTNER, L."],
+    reference:
+      "CUNHA, G. A.; BRUNS, Juliana Pedroso; KISTNER, L. Vivências no estágio supervisionado I: integração entre teoria e prática e a construção da identidade docente. 2026. (Apresentação de Trabalho/Congresso).",
+    summary: null,
+    goal: null,
+    cover: placeholder("foto: registro do estágio", "Registro do estágio supervisionado"),
+    steps: [],
+    learnings: [],
+    gallery: [],
+    testimonial: null,
+  },
+  {
+    id: "parque",
+    title: "Revitalização do parque infantil",
+    subtitle: null,
+    kind: "Apresentação de trabalho",
+    year: 2025,
+    tags: ["Educação Infantil"],
+    authors: [
+      "CHIRATTI, F. G. O.",
+      "CUNHA, G. A.",
+      "HAAS, J.",
+      "KISTNER, L.",
+      "SILVA, L. B. C.",
+      "SILVA, N. M.",
+      "CASETT, N.",
+    ],
+    reference:
+      "CHIRATTI, F. G. O.; CUNHA, G. A.; HAAS, J.; KISTNER, L.; SILVA, L. B. C.; SILVA, N. M.; CASETT, N. Revitalização do parque infantil. 2025. (Apresentação de Trabalho/Outra).",
+    summary: null,
+    goal: null,
+    cover: placeholder("foto: parque infantil revitalizado", "Parque infantil revitalizado"),
+    steps: [],
+    learnings: [],
+    gallery: [],
+    testimonial: null,
+  },
+  {
+    id: "murais",
+    title: "Murais e painéis no ensino de ciências",
+    subtitle: "Murais e painéis como estratégia de ensino de ciências da natureza",
+    kind: "Apresentação de trabalho",
+    year: 2025,
+    tags: ["Ciências"],
+    authors: [
+      "CUNHA, G. A.",
+      "MELIM, J.",
+      "KISTNER, L.",
+      "SILVA, N. M.",
+      "CASETT, N.",
+      "ROEDEL, T.",
+    ],
+    reference:
+      "CUNHA, G. A.; MELIM, J.; KISTNER, L.; SILVA, N. M.; CASETT, N.; ROEDEL, T. Murais e painéis como estratégia de ensino de ciências da natureza. 2025. (Apresentação de Trabalho/Outra).",
+    summary: null,
+    goal: null,
+    cover: placeholder("foto: mural de ciências", "Mural de ciências da natureza"),
+    steps: [],
+    learnings: [],
+    gallery: [],
+    testimonial: null,
+  },
+  {
+    id: "eca",
+    title: "ECA — Estatuto da Criança e do Adolescente",
+    subtitle: null,
+    kind: "Apresentação de trabalho",
+    year: 2024,
+    tags: ["Direitos da criança"],
+    authors: [
+      "CUNHA, G. A.",
+      "DALGOSTIN, J. P.",
+      "KISTNER, L.",
+      "SENS, N.",
+      "ORLANDI, S. K. D.",
+      "ESSER, S.",
+      "CORREA, S. S.",
+    ],
+    reference:
+      "CUNHA, G. A.; DALGOSTIN, J. P.; KISTNER, L.; SENS, N.; ORLANDI, S. K. D.; ESSER, S.; CORREA, S. S. ECA – Estatuto da Criança e do Adolescente. 2024. (Apresentação de Trabalho/Outra).",
+    summary: null,
+    goal: null,
+    cover: placeholder("foto: apresentação sobre o ECA", "Apresentação sobre o ECA"),
+    steps: [],
+    learnings: [],
+    gallery: [],
+    testimonial: null,
+  },
+];
 
 export const profile: Profile = {
-  name: "Lili",
-  fullName: "Nome Completo da Lili",
+  name: "Gabrieli",
+  fullName: "Gabrieli Aparecida Cunha",
   title: "Professora",
-  tagline: "Ensinar é plantar curiosidade e ver florescer a vontade de aprender.",
-  location: "Brasil",
-  photoUrl: null,
-  about: [
-    "Sou professora apaixonada por transformar a sala de aula em um lugar de descoberta, afeto e confiança. Acredito que cada criança aprende de um jeito — e que o papel de quem ensina é encontrar esse caminho junto com ela.",
-    "No dia a dia, combino planejamento cuidadoso com escuta atenta: projetos, brincadeiras, leitura e muita conversa para que o conhecimento faça sentido de verdade.",
-  ],
-  quote: {
-    text: "Ninguém educa ninguém, ninguém educa a si mesmo, os homens se educam entre si, mediatizados pelo mundo.",
-    author: "Paulo Freire",
+  hero: {
+    greeting: "olá, eu sou a",
+    specialty: "Educação Infantil e Anos Iniciais",
+    tagline: "Ensinar é plantar curiosidade e ver florescer a vontade de aprender",
+    photo: placeholder("Retrato da Gabrieli", "Retrato da Gabrieli"),
   },
-  teachingSince: "2016-02",
-  subjects: [
-    "Educação Infantil",
-    "Alfabetização",
-    "Ensino Fundamental I",
-    "Projetos Interdisciplinares",
-    "Educação Inclusiva",
-  ],
-  values: [
-    {
-      icon: "heart",
-      title: "Afeto que ensina",
-      description: "Vínculo e acolhimento são o ponto de partida para qualquer aprendizagem.",
+  about: {
+    lead: "Uma professora que aprende junto com a turma.",
+    paragraphs: [
+      "Sou graduanda em Pedagogia no Centro Universitário de Brusque (UNIFEBE), com habilitação para atuar na Educação Infantil e nos Anos Iniciais do Ensino Fundamental. Desde 2026, trabalho como monitora no Centro de Educação Infantil Hilda Anna Eccel, em Brusque.",
+      "Concluí o Ensino Médio no Instituto Federal Catarinense — Campus Brusque, em 2022. Meus interesses de estudo estão na alfabetização, no letramento e na literatura.",
+    ],
+    areasTitle: "Áreas de interesse",
+    areas: ["Educação Infantil", "Anos Iniciais", "Alfabetização", "Letramento", "Literatura"],
+    quote: {
+      before: "Ensinar não é transferir conhecimento, mas ",
+      highlight: "criar as possibilidades",
+      after: " para a sua própria produção ou a sua construção.",
+      author: "Paulo Freire",
+      source: "Pedagogia da Autonomia",
     },
-    {
-      icon: "sprout",
-      title: "Cada um no seu tempo",
-      description: "Respeito ao ritmo de cada estudante, com acompanhamento próximo e individual.",
-    },
-    {
-      icon: "lightbulb",
-      title: "Curiosidade em primeiro lugar",
-      description: "Perguntas viram projetos; projetos viram descobertas que ficam para a vida.",
-    },
-    {
-      icon: "chat",
-      title: "Parceria com as famílias",
-      description: "Comunicação aberta e constante para caminharmos juntos.",
-    },
-  ],
-  experiences: [
-    {
-      role: "Professora Regente",
-      institution: "Escola Exemplo",
-      location: "Cidade — UF",
-      start: "2021-02",
-      end: null,
-      description:
-        "Responsável por turma do Ensino Fundamental I, com foco em alfabetização e letramento.",
-      highlights: [
-        "Projeto de leitura com as famílias",
-        "Planejamento por projetos interdisciplinares",
-      ],
-    },
-    {
-      role: "Professora de Educação Infantil",
-      institution: "Colégio Exemplo",
-      location: "Cidade — UF",
-      start: "2018-02",
-      end: "2020-12",
-      description: "Turmas de 4 e 5 anos, com rotina baseada no brincar e na investigação.",
-      highlights: ["Horta pedagógica", "Mostra cultural anual"],
-    },
-    {
-      role: "Auxiliar de Classe",
-      institution: "Escola Exemplo",
-      location: "Cidade — UF",
-      start: "2016-02",
-      end: "2017-12",
-      description: "Apoio pedagógico e acompanhamento de estudantes com necessidades específicas.",
-      highlights: [],
-    },
-  ],
-  education: [
-    {
-      degree: "Pós-graduação em Psicopedagogia",
-      institution: "Universidade Exemplo",
-      start: "2019-03",
-      end: "2020-12",
-      note: null,
-    },
-    {
-      degree: "Licenciatura em Pedagogia",
-      institution: "Universidade Exemplo",
-      start: "2013-02",
-      end: "2016-12",
-      note: "Trabalho de conclusão sobre alfabetização e ludicidade",
-    },
-  ],
-  contacts: [
-    { kind: "email", label: "lili@exemplo.com", href: "mailto:lili@exemplo.com" },
-    { kind: "instagram", label: "@lili.professora", href: "https://instagram.com/" },
-    { kind: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/" },
-  ],
+    valuesTitle: "O que guia o meu trabalho",
+    values: [
+      {
+        icon: "heart",
+        tone: "peach",
+        title: "Afeto que ensina",
+        description:
+          "Vínculo e acolhimento são a base para que cada criança se sinta segura para aprender.",
+      },
+      {
+        icon: "clock",
+        tone: "sun",
+        title: "Cada um no seu tempo",
+        description:
+          "Respeito os ritmos individuais e acompanho o desenvolvimento de cada criança de perto.",
+      },
+      {
+        icon: "sparkle",
+        tone: "mint",
+        title: "Curiosidade em primeiro lugar",
+        description:
+          "As perguntas das crianças viram ponto de partida para projetos e descobertas.",
+      },
+      {
+        icon: "circles",
+        tone: "sand",
+        title: "Parceria com as famílias",
+        description:
+          "Escola e família caminham juntas, com diálogo aberto e registros compartilhados.",
+      },
+    ],
+  },
+  trajectory: {
+    lead: "Da formação à sala de aula, com a Educação Infantil no centro.",
+    experiences: [
+      {
+        kind: "work",
+        role: "Monitora · Educação Infantil",
+        school: "Centro de Educação Infantil Hilda Anna Eccel · Brusque",
+        period: { start: 2026, end: null },
+        description: "Monitora em período integral na Educação Infantil.",
+      },
+      {
+        kind: "study",
+        role: "Graduação em Pedagogia",
+        school: "Centro Universitário de Brusque · UNIFEBE",
+        period: { start: 2024, end: null },
+        description:
+          "Habilitação para atuar na Educação Infantil e nos Anos Iniciais do Ensino Fundamental.",
+      },
+      {
+        kind: "study",
+        role: "Ensino Médio",
+        school: "Instituto Federal Catarinense · Campus Brusque",
+        period: { start: 2020, end: 2022 },
+        description: "Ensino Médio concluído em 2022.",
+      },
+    ],
+  },
+  projects: {
+    lead: "Trabalhos apresentados durante a graduação.",
+    allLabel: "Todos",
+    filters: ["Estágio", "Educação Infantil", "Ciências", "Direitos da criança"],
+    items: projects,
+  },
+  education: {
+    degrees: [
+      {
+        kind: "Graduação em andamento",
+        title: "Pedagogia",
+        institution: "Centro Universitário de Brusque · UNIFEBE",
+        period: { start: 2024, end: null },
+        note: "Habilitação para atuar na Educação Infantil e nos Anos Iniciais do Ensino Fundamental.",
+      },
+      {
+        kind: "Ensino Médio",
+        title: "Instituto Federal Catarinense",
+        institution: "Campus Brusque",
+        period: { start: 2020, end: 2022 },
+        note: null,
+      },
+    ],
+    eventsTitle: "Eventos e oficinas",
+    events: [
+      { name: "Jogos para Alfabetização", kind: "Oficina", year: 2025 },
+      {
+        name: "Vivenciando literatura infantil em conexão com a natureza na Formação Continuada de Professores da Educação Básica",
+        kind: "Oficina",
+        year: 2025,
+      },
+      {
+        name: "Arquitetura escolar e a escola do amanhã: uma visão ampla",
+        kind: "Evento",
+        year: 2025,
+      },
+      {
+        name: "2ª Semana Acadêmica do Curso de Educação Especial e 10ª Semana de Acessibilidade e Inclusão",
+        kind: "Semana acadêmica",
+        year: 2024,
+      },
+      {
+        name: "A Inclusão da Pessoa com Deficiência — do trabalho social com famílias à inclusão no mundo do trabalho",
+        kind: "Palestra",
+        year: 2024,
+      },
+      {
+        name: "Práticas pedagógicas e sustentabilidade no fazer docente",
+        kind: "Semana acadêmica",
+        year: 2024,
+      },
+    ],
+  },
+  contact: {
+    title: "Vamos conversar?",
+    text: "Estou aberta a novas oportunidades em escolas e a conversas com coordenações e famílias.",
+    links: [
+      { kind: "email", label: "E-mail", href: "mailto:gabrieliaparecidacunha123@gmail.com" },
+      { kind: "lattes", label: "Currículo Lattes", href: LATTES_URL },
+    ],
+  },
 };

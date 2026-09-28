@@ -88,6 +88,7 @@ auth or logging. Backend rules from the base template do not apply here.
 | Presentation logic      | `frontend/src/services/`                        | Classes (e.g. `ProfileService`). Pages only render.                 |
 | Components              | `frontend/src/components/`                      | Pure rendering from props.                                          |
 | Theme                   | `frontend/src/theme/theme.ts`                   | All colors and fonts.                                               |
+| Animation               | `frontend/src/animation/`                       | Motion choreography classes (ADR-0015). Components never animate.   |
 | Date utilities          | `frontend/src/utils/datetime.ts`                | All date/time logic. Never inline.                                  |
 | Static server           | `frontend/server.ts` + `frontend/config/env.ts` | Serves `dist/client` on Railway. Env reads only in `env.ts`.        |
 
@@ -104,6 +105,7 @@ auth or logging. Backend rules from the base template do not apply here.
 | 0010 | Testing requirements (unit + E2E)                                               |
 | 0011 | Datetime conventions                                                            |
 | 0014 | Frontend-only static site (supersedes 0003, 0004, 0005, 0007, 0009, 0012, 0013) |
+| 0015 | Motion for animations                                                           |
 
 ---
 
