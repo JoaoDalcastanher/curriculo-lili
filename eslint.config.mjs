@@ -13,9 +13,9 @@ export default tseslint.config(
       "**/dist/**",
       "**/build/**",
       "**/node_modules/**",
-      "backend/generated/**",
-      "backend/dist/**",
-      "frontend/.output/**",
+      "frontend/dist/**",
+      "playwright.config.ts",
+      "e2e/**",
       "frontend/src/routeTree.gen.ts",
       "eslint.config.mjs",
       "*.config.js",
@@ -28,7 +28,7 @@ export default tseslint.config(
   ...tseslint.configs.recommendedTypeChecked,
 
   {
-    files: ["backend/src/**/*.ts", "frontend/src/**/*.{ts,tsx}"],
+    files: ["frontend/src/**/*.{ts,tsx}", "frontend/config/**/*.ts", "frontend/server.ts"],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {

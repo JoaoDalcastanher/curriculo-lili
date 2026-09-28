@@ -1,4 +1,0 @@
-[test]
-timeout = 10000
-# Provides required env vars and an isolated log dir before any test imports config/env.
-preload = ["./test-setup.ts"]

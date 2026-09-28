@@ -21,7 +21,7 @@ If anything is unclear or missing, stop and ask. Do not infer. Do not guess.
 When creating a **new project from scratch** — before writing any code, creating any files, or making any decisions — always stop and ask:
 
 > "Este projeto precisa suportar inglês, ou posso desenvolver tudo em português?"
-> *(Does this project need to support English, or can I develop everything in Portuguese?)*
+> _(Does this project need to support English, or can I develop everything in Portuguese?)_
 
 Wait for the answer. Then document the decision in the README under **Linguagem / Language** before proceeding with anything else.
 
@@ -45,18 +45,17 @@ Wait for the answer. Then document the decision in the README under **Linguagem 
 - No `else` or `else if` — use early returns.
 - No single-line `if` statements — always use blocks.
 - Never use `any` or `unknown`.
-- Classes for all controllers, services, and repositories.
-- Named types in `backend/src/model/` for all shapes crossing layer boundaries.
+- Classes for services (e.g. `ProfileService`).
 - Never define reusable types inside pages or components — put them in `frontend/src/models/`.
-- All date/time logic through `backend/src/utils/dateUtils.ts` or `frontend/src/utils/datetime.ts`.
-- All env var access through `backend/src/config/env.ts`. Never raw `process.env` in business logic.
+- All date/time logic through `frontend/src/utils/datetime.ts`.
+- All env var access through `frontend/config/env.ts`. Never raw `process.env` elsewhere.
 - No hardcoded customer content — all branding, text, images, and flags are configurable.
 
 ---
 
 ## Architecture
 
-Follow the Router → Service → Repository layering in ADR-0003. No shortcuts.
+Frontend-only static site — see ADR-0014. All personal content lives in `frontend/src/content/`.
 
 ---
 

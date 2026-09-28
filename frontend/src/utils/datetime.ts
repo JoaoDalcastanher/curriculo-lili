@@ -1,120 +1,93 @@
-// All frontend date/time operations go through this file.
-// Never use toLocaleDateString(), new Date(), or timezone strings in pages or components.
-// If a feature needs new date behaviour, add a function here first (ADR-0011, Policy 001).
+// All frontend date/time operations go through this file (ADR-0011, Policy 001).
+// Never use new Date(), toLocaleDateString() or timezone strings in pages or components.
+// The profile only deals with year-month values ("YYYY-MM"), so this stays small.
 
-// Set this to your application's actual timezone.
-// Example: "America/Sao_Paulo", "Europe/London", "Asia/Tokyo"
-const APP_TIMEZONE = "UTC";
+import type { ISOYearMonth } from "@/models/profile";
 
-type DateInput = Date | string | null | undefined;
+const APP_TIMEZONE = "America/Sao_Paulo";
 
-function getFormatter(timeZone: string): Intl.DateTimeFormat {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone,
+const MONTHS_SHORT = [
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
+] as const;
+
+type YearMonth = {
+  year: number;
+  month: number; // 1–12
+};
+
+export function parseYearMonth(value: ISOYearMonth): YearMonth | null {
+  const match = /^(\d{4})-(\d{2})$/.exec(value);
+  if (match === null) {
+    return null;
+  }
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (month < 1 || month > 12) {
+    return null;
+  }
+  return { year, month };
+}
+
+export function getCurrentYearMonth(now: Date = new Date()): YearMonth {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIMEZONE,
     year: "numeric",
     month: "2-digit",
-    day: "2-digit",
-  });
+  }).formatToParts(now);
+  const year = Number(parts.find((part) => part.type === "year")?.value);
+  const month = Number(parts.find((part) => part.type === "month")?.value);
+  return { year, month };
 }
 
-function toDate(value: DateInput): Date | null {
-  if (value == null) return null;
-  if (value instanceof Date) return value;
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed;
+export function getCurrentYear(now: Date = new Date()): number {
+  return getCurrentYearMonth(now).year;
 }
 
-export function getAppTimezone(): string {
-  return APP_TIMEZONE;
-}
-
-export function getTodayInAppTimezoneISO(now: Date = new Date()): string {
-  return getFormatter(APP_TIMEZONE).format(now);
-}
-
-export function getISODateInTimezone(
-  value: DateInput,
-  timezone: string = APP_TIMEZONE,
-): string {
-  const date = toDate(value);
-  if (date == null) return "";
-  return getFormatter(timezone).format(date);
-}
-
-export function getISODateOnly(value: DateInput): string {
-  if (typeof value === "string" && value.length > 0) return value.slice(0, 10);
-  const date = toDate(value);
-  if (date == null) return "";
-  return date.toISOString().slice(0, 10);
-}
-
-export function isCompleteISODateInput(value: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value);
-}
-
-export function isValidISODateInput(value: string): boolean {
-  if (!isCompleteISODateInput(value)) return false;
-  const parsed = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) return false;
-  const year = parsed.getFullYear().toString().padStart(4, "0");
-  const month = (parsed.getMonth() + 1).toString().padStart(2, "0");
-  const day = parsed.getDate().toString().padStart(2, "0");
-  return `${year}-${month}-${day}` === value;
-}
-
-export function addDaysToISODate(dateISO: string, daysToAdd: number): string {
-  const [year, month, day] = dateISO.split("-").map(Number);
-  const ms = Date.UTC(year, month - 1, day) + daysToAdd * 24 * 60 * 60 * 1000;
-  return new Date(ms).toISOString().slice(0, 10);
-}
-
-export function formatISOToDDMMYYYY(value: string | null | undefined): string {
-  if (!value || value.length === 0) return "";
-  const [year, month, day] = value.split("T")[0].split("-");
-  if (!year || !month || !day) return value;
-  return `${day}/${month}/${year}`;
-}
-
-export function formatISODateForLocale(
-  value: DateInput,
-  locale: string,
-  options: Intl.DateTimeFormatOptions,
-): string {
-  const date = toDate(value);
-  if (date == null) return "";
-  return date.toLocaleDateString(locale, options);
-}
-
-export function formatISODateOnlyForLocale(
-  dateISO: string,
-  locale: string,
-  options: Intl.DateTimeFormatOptions,
-): string {
-  const [year, month, day] = dateISO.split("-").map(Number);
-  if (!year || !month || !day) return "";
-  const date = new Date(year, month - 1, day);
-  return date.toLocaleDateString(locale, options);
-}
-
-export function getNextMidnightInTimezone(
-  timezone: string = APP_TIMEZONE,
-  now: Date = new Date(),
-): Date {
-  const todayISO = getISODateInTimezone(now, timezone);
-  const tomorrowISO = addDaysToISODate(todayISO, 1);
-  const tomorrowStart = new Date(`${tomorrowISO}T00:00:00.000Z`);
-  const candidate = new Date(tomorrowStart);
-  const formatter = getFormatter(timezone);
-
-  while (formatter.format(candidate) !== tomorrowISO) {
-    candidate.setUTCMinutes(candidate.getUTCMinutes() + 15);
+/** "2019-03" → "mar 2019". Invalid input is returned untouched. */
+export function formatYearMonth(value: ISOYearMonth): string {
+  const parsed = parseYearMonth(value);
+  if (parsed === null) {
+    return value;
   }
-  while (formatter.format(candidate) === tomorrowISO) {
-    candidate.setUTCMinutes(candidate.getUTCMinutes() - 1);
+  return `${MONTHS_SHORT[parsed.month - 1]} ${parsed.year}`;
+}
+
+/** ("2019-03", null) → "mar 2019 — atual". */
+export function formatPeriod(start: ISOYearMonth, end: ISOYearMonth | null): string {
+  const endLabel = end === null ? "atual" : formatYearMonth(end);
+  return `${formatYearMonth(start)} — ${endLabel}`;
+}
+
+/** Whole years elapsed since a year-month, never negative. */
+export function yearsSince(start: ISOYearMonth, now: Date = new Date()): number {
+  const parsed = parseYearMonth(start);
+  if (parsed === null) {
+    return 0;
   }
-  candidate.setUTCMinutes(candidate.getUTCMinutes() + 1);
-  candidate.setUTCSeconds(0);
-  candidate.setUTCMilliseconds(0);
-  return candidate;
+  const current = getCurrentYearMonth(now);
+  const months = (current.year - parsed.year) * 12 + (current.month - parsed.month);
+  return Math.max(0, Math.floor(months / 12));
+}
+
+/** Sort key: "2019-03" → 201903. Null (ongoing) sorts as the most recent. */
+export function yearMonthSortKey(value: ISOYearMonth | null): number {
+  if (value === null) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+  const parsed = parseYearMonth(value);
+  if (parsed === null) {
+    return 0;
+  }
+  return parsed.year * 100 + parsed.month;
 }

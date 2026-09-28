@@ -32,15 +32,12 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # Prisma client is generated (not committed) — typed lint rules need its types.
-      - run: bunx prisma generate --schema=backend/prisma/schema.prisma
-
       - name: Fix and commit changed files
         run: |
           set -euo pipefail
           git fetch --no-tags origin "+refs/heads/$BASE_REF:refs/remotes/origin/$BASE_REF"
           CHANGED=$(git diff --name-only --diff-filter=ACMR "origin/$BASE_REF...HEAD" \
-            | grep -E '^(backend|frontend)/src/.*\.(ts|tsx|js|jsx)$' || true)
+            | grep -E '^frontend/(src/.*|config/.*|server)\.(ts|tsx|js|jsx)$' || true)
           if [ -z "$CHANGED" ]; then
             echo "No source files changed; nothing to fix."
             exit 0

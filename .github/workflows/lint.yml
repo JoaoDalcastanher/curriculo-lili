@@ -28,14 +28,11 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # Prisma client is generated (not committed) — typed lint rules need its types.
-      - run: bunx prisma generate --schema=backend/prisma/schema.prisma
-
       - name: Lint and format-check changed files
         run: |
           set -euo pipefail
           CHANGED=$(git diff --name-only --diff-filter=ACMR "$BASE_SHA...HEAD" \
-            | grep -E '^(backend|frontend)/src/.*\.(ts|tsx|js|jsx)$' || true)
+            | grep -E '^frontend/(src/.*|config/.*|server)\.(ts|tsx|js|jsx)$' || true)
           if [ -z "$CHANGED" ]; then
             echo "No source files changed; skipping lint."
             exit 0
