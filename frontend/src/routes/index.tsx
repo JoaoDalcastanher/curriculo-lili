@@ -1,15 +1,18 @@
-import { Box } from "@mui/material";
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 import { AboutSection } from "@/components/home/AboutSection";
 import { ContactSection } from "@/components/home/ContactSection";
 import { EducationSection } from "@/components/home/EducationSection";
 import { HeroSection } from "@/components/home/HeroSection";
+import { ProjectDialog } from "@/components/home/ProjectDialog";
+import { ProjectsSection } from "@/components/home/ProjectsSection";
 import { SiteFooter } from "@/components/home/SiteFooter";
 import { SiteHeader } from "@/components/home/SiteHeader";
-import { TimelineSection } from "@/components/home/TimelineSection";
+import { TrajectorySection } from "@/components/home/TrajectorySection";
 import { navItems } from "@/content/navigation";
 import { profile } from "@/content/profile";
+import { useHomeMotion } from "@/hooks/useHomeMotion";
 import { ProfileService } from "@/services/ProfileService";
 import { getCurrentYear } from "@/utils/datetime";
 
@@ -17,25 +20,65 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-const profileService = new ProfileService(profile);
+const service = new ProfileService(profile);
+const PROJECT_QUERY_PARAM = "projeto";
+
+type OpenProject = {
+  id: string;
+  instant: boolean;
+};
 
 function HomePage() {
-  const data = profileService.getProfile();
+  const data = service.getProfile();
+  const [open, setOpen] = useState<OpenProject | null>(null);
+  useHomeMotion();
+
+  // Deep link: /?projeto=horta opens that project directly.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get(PROJECT_QUERY_PARAM);
+    if (service.findProject(id) !== null && id !== null) {
+      setOpen({ id, instant: true });
+    }
+  }, []);
+
+  const openProject = service.findProject(open?.id ?? null);
+  const formatTags = (tags: string[]) => service.formatTags(tags);
+
   return (
-    <Box sx={{ minHeight: "100vh", overflowX: "clip" }}>
+    <>
       <SiteHeader name={data.name} items={navItems} />
-      <Box component="main">
-        <HeroSection
-          profile={data}
-          stats={profileService.getStats()}
-          initials={profileService.getInitials()}
+      <main>
+        <HeroSection profile={data} />
+        <AboutSection about={data.about} />
+        <TrajectorySection
+          lead={data.trajectory.lead}
+          current={service.getCurrentExperience()}
+          past={service.getPastExperiences()}
         />
-        <AboutSection profile={data} />
-        <TimelineSection experiences={profileService.getExperiences()} />
-        <EducationSection education={profileService.getEducation()} />
-        <ContactSection name={data.name} contacts={data.contacts} />
-      </Box>
+        <ProjectsSection
+          lead={data.projects.lead}
+          projects={data.projects.items}
+          filters={service.getProjectFilters()}
+          formatTags={formatTags}
+          onOpen={(id) => setOpen((current) => current ?? { id, instant: false })}
+        />
+        <EducationSection
+          education={data.education}
+          formatCourseInfo={(course) => service.formatCourseInfo(course)}
+        />
+        <ContactSection contact={data.contact} />
+      </main>
       <SiteFooter fullName={data.fullName} year={getCurrentYear()} />
-    </Box>
+      {openProject !== null && open !== null && (
+        <ProjectDialog
+          key={openProject.id}
+          project={openProject}
+          instant={open.instant}
+          formatTags={formatTags}
+          formatStepNumber={(index) => service.formatStepNumber(index)}
+          onClosed={() => setOpen(null)}
+        />
+      )}
+    </>
   );
 }

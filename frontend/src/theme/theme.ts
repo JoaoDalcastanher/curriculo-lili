@@ -1,76 +1,87 @@
-// Visual identity: warm paper, deep ink, terracotta and sage — a cozy classroom feel.
-// Provisional until the final design arrives; every color lives here.
+// Visual identity from the Claude Design handoff (Gabrieli.dc.html).
+// Green (#3B6255, shared with the presente-de-noivado project) leads; warm
+// accents bring the joy. Every color and font of the site lives here.
 
-import { createTheme, responsiveFontSizes } from "@mui/material/styles";
+import { createTheme } from "@mui/material/styles";
 
 export const palette = {
-  paper: "#FBF6EE",
-  paperDeep: "#F3EADB",
-  ink: "#1E2A3B",
-  inkSoft: "#4A5568",
-  terracotta: "#D2643F",
-  terracottaSoft: "#F4C9B5",
-  sage: "#6F9A7C",
-  sageSoft: "#CFE3D4",
-  mustard: "#E7B24C",
-  mustardSoft: "#F8E3B4",
-  sky: "#8BB6D6",
+  paper: "#F7F5F1",
+  paperDeep: "#EFEDE7",
   white: "#FFFFFF",
+  offWhite: "#FBFAF6",
+  ink: "#22332C",
+  inkHover: "#26392F",
+  muted: "#51655C",
+  green: "#3B6255",
+  mint: "#CBDED3",
+  mintHover: "#BCD4C6",
+  sun: "#F2B83A",
+  sunHover: "#EFAE25",
+  coral: "#F07B5E",
+  peach: "#F6B8A6",
+  peachHover: "#F4AA96",
+  sand: "#D2C49E",
+  sandHover: "#C9B98E",
+  hairline: "rgba(34,51,44,0.18)",
+  hairlineSoft: "rgba(34,51,44,0.12)",
+  headerGlass: "rgba(247,245,241,0.88)",
+  backdrop: "rgba(34,51,44,0.6)",
 } as const;
 
 export const fonts = {
-  display: '"Fraunces", "Georgia", serif',
-  body: '"Nunito", "Helvetica Neue", Arial, sans-serif',
-  hand: '"Caveat", "Comic Sans MS", cursive',
+  display: "'Bricolage Grotesque', system-ui, sans-serif",
+  body: "'Nunito', system-ui, sans-serif",
+  hand: "'Caveat', cursive",
 } as const;
 
 export const FONTS_STYLESHEET_URL =
-  "https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400;1,9..144,600&family=Nunito:wght@400;600;700;800&display=swap";
+  "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Caveat:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap";
 
-const baseTheme = createTheme({
+/** Shared easing curves (cubic-bezier) used by CSS transitions and Motion. */
+export const easing = {
+  out: [0.22, 1, 0.36, 1],
+  morph: [0.32, 0.72, 0, 1],
+  count: [0.16, 1, 0.3, 1],
+} as const;
+
+export const transitionOut = "cubic-bezier(.22,1,.36,1)";
+
+/** Page gutter and content width, reused by every section. */
+export const layout = {
+  maxWidth: "76rem",
+  gutter: "clamp(1.25rem,5vw,3rem)",
+  headerHeight: "4.5rem",
+  sectionPadding: "clamp(4.5rem,10vw,8rem)",
+} as const;
+
+export const theme = createTheme({
   palette: {
     mode: "light",
-    primary: { main: palette.terracotta, contrastText: palette.white },
-    secondary: { main: palette.sage, contrastText: palette.white },
+    primary: { main: palette.green, contrastText: palette.white },
+    secondary: { main: palette.sun, contrastText: palette.ink },
     background: { default: palette.paper, paper: palette.white },
-    text: { primary: palette.ink, secondary: palette.inkSoft },
+    text: { primary: palette.ink, secondary: palette.muted },
   },
-  shape: { borderRadius: 20 },
-  typography: {
-    fontFamily: fonts.body,
-    h1: { fontFamily: fonts.display, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 0.95 },
-    h2: { fontFamily: fonts.display, fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1.05 },
-    h3: { fontFamily: fonts.display, fontWeight: 600, letterSpacing: "-0.01em" },
-    h4: { fontFamily: fonts.display, fontWeight: 600 },
-    h5: { fontFamily: fonts.display, fontWeight: 600 },
-    h6: { fontWeight: 800 },
-    body1: { fontSize: "1.075rem", lineHeight: 1.75 },
-    overline: { fontWeight: 800, letterSpacing: "0.18em" },
-    button: { textTransform: "none", fontWeight: 800 },
-  },
+  typography: { fontFamily: fonts.body },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
         html: { scrollBehavior: "smooth" },
-        body: { backgroundColor: palette.paper },
-        "::selection": { backgroundColor: palette.mustardSoft },
+        body: {
+          backgroundColor: palette.paper,
+          color: palette.ink,
+          overflowX: "clip",
+          WebkitFontSmoothing: "antialiased",
+        },
+        a: { color: palette.green, textDecoration: "none" },
+        "a:hover": { color: palette.ink },
+        "::selection": { backgroundColor: palette.sun, color: palette.ink },
+        ":focus-visible": { outline: `3px solid ${palette.sun}`, outlineOffset: "2px" },
         "@media (prefers-reduced-motion: reduce)": {
           html: { scrollBehavior: "auto" },
-          "*, *::before, *::after": {
-            animationDuration: "0.01ms !important",
-            transitionDuration: "0.01ms !important",
-          },
+          "*": { transition: "none !important", animation: "none !important" },
         },
       },
     },
-    MuiButton: {
-      defaultProps: { disableElevation: true },
-      styleOverrides: { root: { borderRadius: "999px", paddingInline: 24, paddingBlock: 12 } },
-    },
-    MuiChip: {
-      styleOverrides: { root: { fontWeight: 700, borderRadius: 999 } },
-    },
   },
 });
-
-export const theme = responsiveFontSizes(baseTheme, { factor: 2.4 });

@@ -1,97 +1,147 @@
-import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
-import InstagramIcon from "@mui/icons-material/Instagram";
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
-import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import { Box, Button, Container, Stack, Typography } from "@mui/material";
-import type { ReactElement } from "react";
+import { Box } from "@mui/material";
 
-import type { ContactKind, ContactLink } from "@/models/profile";
-import { fonts, palette } from "@/theme/theme";
-
-import { Decoration } from "./Decoration";
-
-const contactIcons: Record<ContactKind, ReactElement> = {
-  email: <EmailRoundedIcon />,
-  whatsapp: <WhatsAppIcon />,
-  instagram: <InstagramIcon />,
-  linkedin: <LinkedInIcon />,
-};
+import type { Contact } from "@/models/profile";
+import { fonts, layout, palette } from "@/theme/theme";
 
 type ContactSectionProps = {
-  name: string;
-  contacts: ContactLink[];
+  contact: Contact;
 };
 
-export function ContactSection({ name, contacts }: ContactSectionProps) {
+const arrow = (
+  <svg
+    viewBox="0 0 24 24"
+    width="17"
+    height="17"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.4"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M7 17L17 7M9 7h8v8" />
+  </svg>
+);
+
+const linkBaseSx = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "0.6rem",
+  minHeight: "3.25rem",
+  px: "1.5rem",
+  borderRadius: "0.7rem",
+  fontWeight: 800,
+  fontSize: "1rem",
+  transition: "background 0.3s, transform 0.3s, color 0.3s",
+} as const;
+
+const primaryLinkSx = {
+  ...linkBaseSx,
+  backgroundColor: palette.white,
+  color: palette.ink,
+  "&:hover": { backgroundColor: palette.sun, color: palette.ink, transform: "translateY(-3px)" },
+} as const;
+
+const outlineLinkSx = {
+  ...linkBaseSx,
+  border: `2px solid ${palette.white}`,
+  color: palette.white,
+  "&:hover": { backgroundColor: palette.white, color: palette.ink, transform: "translateY(-3px)" },
+} as const;
+
+export function ContactSection({ contact }: ContactSectionProps) {
   return (
-    <Box id="contato" component="section" sx={{ py: { xs: 6, md: 10 }, scrollMarginTop: 72 }}>
-      <Container maxWidth="lg">
+    <Box
+      component="section"
+      id="contato"
+      aria-label="Contato"
+      sx={{ scrollMarginTop: layout.headerHeight, pb: "clamp(3rem,6vw,5rem)" }}
+    >
+      <Box sx={{ maxWidth: layout.maxWidth, mx: "auto", px: layout.gutter }}>
         <Box
+          data-reveal=""
           sx={{
             position: "relative",
             overflow: "hidden",
-            borderRadius: { xs: "32px", md: "48px" },
-            px: { xs: 3.5, md: 10 },
-            py: { xs: 7, md: 11 },
+            p: "clamp(2.5rem,7vw,5.5rem) clamp(1.5rem,6vw,5rem)",
+            borderRadius: "1.25rem",
+            backgroundColor: palette.green,
             color: palette.white,
-            background: `linear-gradient(135deg, ${palette.terracotta} 0%, #C9552F 60%, #B5472A 100%)`,
           }}
         >
-          <Decoration
-            shape="circle"
-            color="rgba(255,255,255,0.08)"
-            size={340}
-            sx={{ top: -140, right: -100 }}
+          <Box
+            aria-hidden="true"
+            data-float=""
+            sx={{
+              position: "absolute",
+              right: "-4rem",
+              bottom: "-5rem",
+              width: "16rem",
+              height: "16rem",
+              borderRadius: "50%",
+              backgroundColor: palette.sun,
+            }}
           />
-          <Decoration
-            shape="star"
-            color={palette.mustard}
-            size={54}
-            rotate={18}
-            sx={{ top: 36, right: { xs: 24, md: 90 } }}
+          <Box
+            aria-hidden="true"
+            data-float=""
+            sx={{
+              position: "absolute",
+              right: "9rem",
+              bottom: "5.5rem",
+              width: "3rem",
+              height: "3rem",
+              borderRadius: "50%",
+              backgroundColor: palette.peach,
+            }}
           />
-          <Decoration
-            shape="squiggle"
-            color="rgba(255,255,255,0.25)"
-            size={140}
-            sx={{ bottom: 10, left: -30 }}
-          />
-          <Stack spacing={3} sx={{ position: "relative", maxWidth: 720 }}>
-            <Typography
+          <Box sx={{ position: "relative", maxWidth: "38rem" }}>
+            <Box
+              component="h2"
               sx={{
-                fontFamily: fonts.hand,
-                fontSize: { xs: "1.7rem", md: "2rem" },
-                color: palette.mustardSoft,
-                lineHeight: 1,
+                m: 0,
+                fontFamily: fonts.display,
+                fontWeight: 700,
+                fontSize: "clamp(3rem,8vw,5.75rem)",
+                lineHeight: 0.95,
+                letterSpacing: "-0.045em",
               }}
             >
-              vamos conversar?
-            </Typography>
-            <Typography variant="h2" component="h2" sx={{ color: palette.white }}>
-              {`Escola, família ou curiosidade — a ${name} adora uma boa conversa.`}
-            </Typography>
-            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1.5, pt: 2 }}>
-              {contacts.map((contact) => (
-                <Button
-                  key={contact.kind}
-                  href={contact.href}
-                  target={contact.kind === "email" ? undefined : "_blank"}
-                  rel={contact.kind === "email" ? undefined : "noopener noreferrer"}
-                  startIcon={contactIcons[contact.kind]}
-                  size="large"
-                  sx={{
-                    backgroundColor: palette.white,
-                    color: palette.ink,
-                    "&:hover": { backgroundColor: palette.mustardSoft },
-                  }}
-                >
-                  {contact.label}
-                </Button>
-              ))}
-            </Stack>
-          </Stack>
+              {contact.title}
+            </Box>
+            <Box
+              component="p"
+              sx={{
+                m: "1.5rem 0 0",
+                maxWidth: "30rem",
+                fontSize: "1.15rem",
+                lineHeight: 1.6,
+                textWrap: "pretty",
+              }}
+            >
+              {contact.text}
+            </Box>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", mt: "2.25rem" }}>
+              {contact.links.map((link, index) => {
+                const external = link.kind !== "email";
+                return (
+                  <Box
+                    key={link.kind}
+                    component="a"
+                    href={link.href}
+                    target={external ? "_blank" : undefined}
+                    rel={external ? "noopener noreferrer" : undefined}
+                    sx={index === 0 ? primaryLinkSx : outlineLinkSx}
+                  >
+                    {link.label}
+                    {arrow}
+                  </Box>
+                );
+              })}
+            </Box>
+          </Box>
         </Box>
-      </Container>
+      </Box>
     </Box>
   );
 }

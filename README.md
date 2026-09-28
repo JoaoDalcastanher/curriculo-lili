@@ -1,6 +1,6 @@
-# Currículo da Lili
+# Currículo da Gabrieli
 
-Site-currículo da Lili, professora. Uma página única, bonita e estática — sem banco de
+Site-currículo da Gabrieli, professora. Uma página única, bonita e estática — sem banco de
 dados, sem login, sem backend.
 
 ---
@@ -33,12 +33,24 @@ Por que só frontend: veja `docs/adr/0014-frontend-only-static-site.md`.
 
 ## Como editar o conteúdo
 
-Todo o texto do site está em **`frontend/src/content/profile.ts`** — nome, frase de
-apresentação, sobre, experiências, formação e contatos. Os textos atuais são
-provisórios. Datas no formato `"AAAA-MM"`; `end: null` significa "atual".
+Todo o texto do site está em **`frontend/src/content/profile.ts`**: apresentação,
+números do topo, sobre, trajetória, projetos, formação e contatos. O conteúdo atual veio
+do design do Claude Design; revise escolas, projetos, cursos e contatos.
 
-Para usar uma foto, coloque o arquivo em `frontend/public/` (ex.: `lili.jpg`) e defina
-`photoUrl: "/lili.jpg"`.
+### Fotos
+
+1. Coloque o arquivo em `frontend/public/fotos/` (ex.: `retrato.jpg`).
+2. No `profile.ts`, troque `src: null` pelo caminho, ex.: `src: "/fotos/retrato.jpg"`.
+
+Enquanto `src` for `null`, aparece um espaço reservado com a dica da foto.
+Nos projetos, use fotos de mãos, materiais, trabalhos e ambientes, ou crianças de
+costas — **nunca rostos de alunos identificáveis**.
+
+### Projetos
+
+Cada projeto tem um `id` (usado no link direto `/?projeto=<id>`), etiquetas (`tags`)
+que precisam estar em `projects.filters`, etapas, aprendizados, galeria e um
+depoimento opcional.
 
 ---
 
@@ -73,7 +85,9 @@ bun run format
 frontend/
   src/content/     conteúdo do site (edite aqui)
   src/models/      tipos
-  src/services/    ProfileService (ordenação, estatísticas)
+  src/services/    ProfileService (ordenação, filtros, formatação)
+  src/animation/   animações (Motion)
+  public/fotos/    fotos do site
   src/components/  seções da página
   src/theme/       cores e fontes
   src/utils/       datas

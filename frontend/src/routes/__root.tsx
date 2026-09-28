@@ -1,20 +1,23 @@
 /// <reference types="vite/client" />
-import { CssBaseline, ThemeProvider } from "@mui/material";
+import { CssBaseline, GlobalStyles, ThemeProvider } from "@mui/material";
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 
+import { MOTION_BOOT_SCRIPT, motionHiddenStyles } from "@/animation/motionFlags";
 import { profile } from "@/content/profile";
 import { FONTS_STYLESHEET_URL, palette, theme } from "@/theme/theme";
+
+const pageTitle = `${profile.name} · ${profile.title}`;
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: `${profile.name} · ${profile.title}` },
-      { name: "description", content: profile.tagline },
+      { title: pageTitle },
+      { name: "description", content: profile.hero.tagline },
       { name: "theme-color", content: palette.paper },
-      { property: "og:title", content: `${profile.name} · ${profile.title}` },
-      { property: "og:description", content: profile.tagline },
+      { property: "og:title", content: pageTitle },
+      { property: "og:description", content: profile.hero.tagline },
       { property: "og:type", content: "profile" },
     ],
     links: [
@@ -31,11 +34,13 @@ function RootDocument() {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: MOTION_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
         <ThemeProvider theme={theme}>
           <CssBaseline />
+          <GlobalStyles styles={motionHiddenStyles} />
           <Outlet />
         </ThemeProvider>
         <Scripts />
