@@ -4,6 +4,7 @@ import { Confetti } from './components/Confetti'
 import { ControlPanel } from './components/ControlPanel'
 import { GlobeScene } from './components/GlobeScene'
 import { MapBoard } from './components/MapBoard'
+import { Penguin } from './components/Penguin'
 import { Postcard } from './components/Postcard'
 import { SpaceScene } from './components/SpaceScene'
 import { KM_PER_CELL } from './game/config'
@@ -54,7 +55,7 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true" />
+          <span className="brand-mark" aria-hidden="true"><Penguin mood="feliz" size={40} /></span>
           <div>
             <h1 className="brand-title">A viagem do Pingo</h1>
             <p className="brand-subtitle">Da Patagônia até Santa Catarina</p>
