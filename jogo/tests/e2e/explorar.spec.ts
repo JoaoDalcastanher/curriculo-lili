@@ -72,3 +72,20 @@ test('volta para o jogo', async ({ page }) => {
   await expect(page.getByTestId('painel')).toBeVisible()
   await expect(page.getByTestId('explorar')).toBeHidden()
 })
+
+test('clicar no selo abre o cartão-postal do lugar', async ({ page }) => {
+  await page.getByTestId('ir-alasca').click()
+  await page.getByTestId('abrir-postal').click()
+  const postcard = page.getByRole('dialog', { name: /Anchorage/ })
+  await expect(postcard).toBeVisible()
+  await expect(postcard).toBeInViewport()
+  await expect(postcard).toContainText('Cartão-postal de Anchorage')
+  await expect(postcard.getByRole('button', { name: 'Fechar' })).toBeFocused()
+
+  await page.keyboard.press('Escape')
+  await expect(postcard).toBeHidden()
+
+  await page.getByTestId('abrir-postal').click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Fechar' }).click()
+  await expect(page.getByTestId('explorar-postal')).toBeHidden()
+})

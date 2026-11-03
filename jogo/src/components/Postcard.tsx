@@ -27,7 +27,7 @@ const FEMININE = ['Linha', 'Volta', 'Lua', 'Cidade', 'Muralha']
 const MASCULINE = ['Quadradinho', 'Rio', 'Gabão', 'Egito', 'Meio', 'Litoral', 'Sol', 'Mar', 'Polo', 'Deserto', 'Monte', 'Havaí']
 
 /** "do Quadradinho G6", "da Linha do Equador", "de Natal". */
-function prepositionFor(place: string): string {
+export function prepositionFor(place: string): string {
   const first = place.split(' ')[0]
   if (FEMININE.includes(first)) {
     return 'da'

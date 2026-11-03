@@ -1,5 +1,5 @@
 import { geoDistance, geoGraticule10, geoInterpolate, geoOrthographic, geoPath } from 'd3-geo'
-import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { formatKm, formatSquares } from '../game/format'
 import { greatCircleKm } from '../game/geo'
 import { MAP_JOURNEY } from '../game/journey'
@@ -8,6 +8,7 @@ import { kmToSquares } from '../game/route'
 import type { LatLon } from '../game/types'
 import { LAND } from '../game/world'
 import { Penguin } from './Penguin'
+import { prepositionFor } from './Postcard'
 import { PostcardStamp } from './PostcardStamp'
 
 type Coordinates = [number, number]
@@ -338,26 +339,90 @@ const SPACE_COLORS: Readonly<Record<string, string>> = {
 }
 
 /* ---------- Cartão do lugar escolhido ---------- */
-function ExploreCard({ place }: { place: ExplorePlace }) {
+const stampTone = (place: ExplorePlace) => (place.group === 'espaco' ? 'is-space' : 'is-world')
+
+function PlaceFacts({ place }: { place: ExplorePlace }) {
+  return (
+    <dl className="postcard-facts">
+      <div>
+        <dt>Desde a Patagônia</dt>
+        <dd>{formatSquares(kmToSquares(place.km))}</dd>
+      </div>
+      <div>
+        <dt>Em quilômetros</dt>
+        <dd>{formatKm(place.km)}</dd>
+      </div>
+    </dl>
+  )
+}
+
+function ExploreCard({ place, onOpen }: { place: ExplorePlace; onOpen: () => void }) {
   return (
     <article className="explore-card" data-testid="explorar-cartao" data-place={place.id}>
-      <PostcardStamp mood={place.mood} sceneId={place.sceneId} tone={place.group === 'espaco' ? 'is-space' : 'is-world'} />
+      <button
+        type="button"
+        className="explore-stamp-button"
+        onClick={onOpen}
+        aria-label={`Abrir o cartão-postal ${prepositionFor(place.name)} ${place.name}`}
+        title="Ver o cartão-postal"
+        data-testid="abrir-postal"
+      >
+        <PostcardStamp mood={place.mood} sceneId={place.sceneId} tone={stampTone(place)} />
+      </button>
       <div className="explore-card-body">
         <p className="postcard-kicker">{place.region}</p>
         <h2 className="postcard-title">{place.name}</h2>
         <p className="postcard-text">{place.line}</p>
-        <dl className="postcard-facts">
-          <div>
-            <dt>Desde a Patagônia</dt>
-            <dd>{formatSquares(kmToSquares(place.km))}</dd>
-          </div>
-          <div>
-            <dt>Em quilômetros</dt>
-            <dd>{formatKm(place.km)}</dd>
-          </div>
-        </dl>
+        <PlaceFacts place={place} />
       </div>
     </article>
+  )
+}
+
+/** O cartão-postal grande do lugar, aberto ao clicar no selo. */
+function ExplorePostcard({ place, onClose }: { place: ExplorePlace; onClose: () => void }) {
+  const closeRef = useRef<HTMLButtonElement>(null)
+  const cardRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    // No celular o cartão abre por cima do globo, lá em cima: rola até ele.
+    const box = cardRef.current?.getBoundingClientRect()
+    if (box && (box.top < 0 || box.bottom > window.innerHeight)) {
+      cardRef.current?.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' })
+    }
+    closeRef.current?.focus({ preventScroll: true })
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div
+      className="postcard-backdrop"
+      data-testid="explorar-postal"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose()
+        }
+      }}
+    >
+      <article ref={cardRef} className="postcard" role="dialog" aria-modal="true" aria-labelledby="explorar-postal-titulo">
+        <PostcardStamp mood={place.mood} sceneId={place.sceneId} tone={stampTone(place)} />
+        <div className="postcard-body">
+          <p className="postcard-kicker">Cartão-postal {prepositionFor(place.name)} {place.name}</p>
+          <h2 id="explorar-postal-titulo" className="postcard-title">{place.name}{place.region ? `, ${place.region}` : ''}</h2>
+          <p className="postcard-text">{place.line}</p>
+          <PlaceFacts place={place} />
+          <div className="postcard-actions">
+            <button ref={closeRef} type="button" className="button is-primary" onClick={onClose}>Fechar</button>
+          </div>
+        </div>
+      </article>
+    </div>
   )
 }
 
@@ -371,9 +436,12 @@ const GROUPS: readonly { id: ExplorePlace['group']; label: string }[] = [
 export function Explore() {
   const [world, setWorld] = useState<World>('terra')
   const [selected, setSelected] = useState<ExplorePlace>(PATAGONIA)
+  const [postcardOpen, setPostcardOpen] = useState(false)
+  const closePostcard = useCallback(() => setPostcardOpen(false), [])
 
   const choose = (place: ExplorePlace) => {
     setSelected(place)
+    setPostcardOpen(false)
     setWorld(place.group === 'espaco' ? 'espaco' : 'terra')
   }
 
@@ -386,10 +454,11 @@ export function Explore() {
         </div>
         {world === 'terra' && <EarthExplorer selected={selected} onSelect={choose} />}
         {world === 'espaco' && <SpaceExplorer selected={selected} onSelect={choose} />}
+        {postcardOpen && <ExplorePostcard place={selected} onClose={closePostcard} />}
       </section>
 
       <aside className="panel explore-panel" aria-label="Lugares">
-        <ExploreCard place={selected} />
+        <ExploreCard place={selected} onOpen={() => setPostcardOpen(true)} />
         {GROUPS.map((group) => (
           <div key={group.id} className="explore-group">
             <p className="explore-group-label">{group.label}</p>
