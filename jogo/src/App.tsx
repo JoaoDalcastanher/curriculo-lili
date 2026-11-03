@@ -85,7 +85,6 @@ export default function App() {
           )}
 
           {won && <Confetti />}
-          {won && !state.postcardOpen && <div className="win-banner" data-testid="parabens">Parabéns!</div>}
 
           {state.postcardOpen && interpretation && (
             <Postcard

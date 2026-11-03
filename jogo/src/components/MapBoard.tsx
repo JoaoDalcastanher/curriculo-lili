@@ -1,4 +1,4 @@
-import { AFRICA, COLUMN_LABELS, EQUATOR_Y, GOAL_HOPS, GRID_SIZE, PLACES, SOUTH_AMERICA, WAYPOINTS } from '../game/config'
+import { COLUMN_LABELS, GOAL_HOPS, GRID_SIZE, PLACES, SOUTH_AMERICA, WAYPOINTS } from '../game/config'
 import { GOAL, PATH, positionAtHops, trailAtHops } from '../game/route'
 import type { GridPoint, PenguinMood } from '../game/types'
 import { Penguin } from './Penguin'
@@ -6,7 +6,6 @@ import { Penguin } from './Penguin'
 /** Unidades SVG por quadradinho. */
 const CELL = 60
 const MARGIN = 46
-const MAX_WORLD = 60
 
 type MapBoardProps = {
   /** Passos já percorridos na malha. */
@@ -18,18 +17,13 @@ type MapBoardProps = {
   hidden: boolean
 }
 
-type Window = { size: number; zoom: number; x: number; y: number; width: number }
+type Window = { x: number; y: number; width: number }
 
-const clamp01 = (value: number) => Math.max(0, Math.min(1, value))
-
-/** O mapa cresce junto com o Pingo quando ele sai do quadriculado da atividade. */
-export function windowFor(point: GridPoint): Window {
-  const need = Math.max(point.x, point.y) + 0.5
-  const size = Math.max(GRID_SIZE, need + 2.5 * clamp01(need - GRID_SIZE))
-  const zoom = size / GRID_SIZE
-  const margin = MARGIN * zoom
-  return { size, zoom, x: -margin, y: -size * CELL - margin, width: size * CELL + margin * 2 }
-}
+/**
+ * O mapa é sempre o quadriculado da atividade (15 × 15). Se o Pingo passar de
+ * Santa Catarina, a viagem acontece no globo — o mapa não se expande.
+ */
+const VIEW: Window = { x: -MARGIN, y: -GRID_SIZE * CELL - MARGIN, width: GRID_SIZE * CELL + MARGIN * 2 }
 
 function toSvg(point: GridPoint): GridPoint {
   return { x: point.x * CELL, y: -point.y * CELL }
@@ -49,11 +43,10 @@ function polyline(points: readonly GridPoint[]): string {
 
 const polygon = (points: readonly GridPoint[]) => `M${polyline(points).replace(/ /g, ' L')} Z`
 const SOUTH_AMERICA_PATH = polygon(SOUTH_AMERICA)
-const AFRICA_PATH = polygon(AFRICA)
 const BASE_ROUTE = PATH.slice(0, GOAL_HOPS + 1)
 const STOPS = WAYPOINTS.filter((waypoint) => waypoint.hops < GOAL_HOPS)
 const BASE = GRID_SIZE * CELL
-const lines = Array.from({ length: MAX_WORLD + 1 }, (_, index) => index)
+const lines = Array.from({ length: GRID_SIZE + 1 }, (_, index) => index)
 const indexes = Array.from({ length: GRID_SIZE }, (_, index) => index)
 const STAR_PATH = 'M0 -17 L5 -5.5 L17.5 -5.2 L7.8 2.8 L11 15 L0 8 L-11 15 L-7.8 2.8 L-17.5 -5.2 L-5 -5.5 Z'
 const NON_SCALING = { vectorEffect: 'non-scaling-stroke' } as const
@@ -65,32 +58,6 @@ const WAVES: readonly GridPoint[] = [
   { x: 13.2, y: 4.1 },
   { x: 5.6, y: 1.6 },
   { x: 13.6, y: 12.2 },
-  { x: 26, y: 12 },
-  { x: 34, y: 26 },
-  { x: 42, y: 16 },
-  { x: 28, y: 40 },
-  { x: 24, y: 20 },
-]
-
-type FarLabel = { at: GridPoint; text: string; className: string; anchor?: 'start' | 'middle' | 'end'; size: number }
-
-/** Rótulos que só aparecem quando o mapa se expande. */
-const FAR_LABELS: readonly FarLabel[] = [
-  { at: { x: 9, y: 25 }, text: 'BRASIL', className: 'map-country', size: 30 },
-  { at: { x: 45, y: 46 }, text: 'ÁFRICA', className: 'map-country', size: 30 },
-  { at: { x: 34, y: 20 }, text: 'Oceano Atlântico', className: 'map-ocean', size: 26 },
-  { at: { x: 16.1, y: 17.9 }, text: 'Rio de Janeiro', className: 'map-city-label', anchor: 'end', size: 17 },
-  { at: { x: 19, y: 25 }, text: 'Salvador', className: 'map-city-label', anchor: 'end', size: 17 },
-  { at: { x: 21, y: 30.4 }, text: 'Natal', className: 'map-city-label', anchor: 'end', size: 17 },
-  { at: { x: 50.2, y: 36 }, text: 'Gabão', className: 'map-city-label', anchor: 'middle', size: 17 },
-  { at: { x: 36, y: 34.6 }, text: 'Linha do Equador', className: 'map-equator-label', size: 17 },
-]
-
-const FAR_DOTS: readonly GridPoint[] = [
-  { x: 16.5, y: 17.4 },
-  { x: 19.5, y: 24.6 },
-  { x: 21.5, y: 29.9 },
-  { x: 50.2, y: 34.6 },
 ]
 
 function MapLabel({ at, children, className, anchor = 'middle', size }: {
@@ -116,17 +83,14 @@ function CityDot({ at, radius = 6 }: { at: GridPoint; radius?: number }) {
 export function MapBoard({ hops, traveling, mood, celebrating, hidden }: MapBoardProps) {
   const position = positionAtHops(hops)
   const trail = trailAtHops(hops)
-  const view = windowFor(position)
-  const expanded = clamp01((view.size - GRID_SIZE - 1) / 3)
-  const axisOpacity = clamp01(1 - (view.size - GRID_SIZE) / 1.5)
+  const view = VIEW
   const bubbleLeft = position.x > 9
-  const bubbleBelow = position.y > view.size - 2
+  const bubbleBelow = position.y > GRID_SIZE - 2
   const goal = toSvg(GOAL)
-  const worldSize = view.size * CELL
-  const marginPercent = (MARGIN * view.zoom / view.width) * 100
+  const marginPercent = (MARGIN / view.width) * 100
 
   return (
-    <div className="map" data-testid="mapa" data-zoom={view.zoom.toFixed(2)}>
+    <div className="map" data-testid="mapa">
       <svg
         viewBox={`${view.x} ${view.y} ${view.width} ${view.width}`}
         className="map-svg"
@@ -135,7 +99,7 @@ export function MapBoard({ hops, traveling, mood, celebrating, hidden }: MapBoar
       >
         <defs>
           <clipPath id="board">
-            <rect x="0" y={-worldSize} width={worldSize} height={worldSize} rx={14 * view.zoom} />
+            <rect x="0" y={-BASE} width={BASE} height={BASE} rx={14} />
           </clipPath>
           <pattern id="sea-texture" width="24" height="24" patternUnits="userSpaceOnUse">
             <circle cx="4" cy="4" r="1" className="sea-dot" />
@@ -143,29 +107,19 @@ export function MapBoard({ hops, traveling, mood, celebrating, hidden }: MapBoar
         </defs>
 
         <g clipPath="url(#board)">
-          <rect x="0" y={-worldSize} width={worldSize} height={worldSize} className="map-sea" />
-          <rect x="0" y={-worldSize} width={worldSize} height={worldSize} fill="url(#sea-texture)" />
+          <rect x="0" y={-BASE} width={BASE} height={BASE} className="map-sea" />
+          <rect x="0" y={-BASE} width={BASE} height={BASE} fill="url(#sea-texture)" />
           <path d={SOUTH_AMERICA_PATH} className="map-land" style={NON_SCALING} />
-          <path d={AFRICA_PATH} className="map-land" style={NON_SCALING} />
 
           {WAVES.map((wave) => {
             const svg = toSvg(wave)
             return <path key={`${wave.x}-${wave.y}`} d={`M${svg.x} ${svg.y} q7 -7 14 0 t14 0`} className="map-wave" />
           })}
 
-          <line
-            x1="0"
-            x2={MAX_WORLD * CELL}
-            y1={-EQUATOR_Y * CELL}
-            y2={-EQUATOR_Y * CELL}
-            className="map-equator"
-            style={{ ...NON_SCALING, opacity: expanded }}
-          />
-
           {lines.map((index) => (
             <g key={index} className="map-grid">
-              <line x1={index * CELL} y1={0} x2={index * CELL} y2={-MAX_WORLD * CELL} style={NON_SCALING} />
-              <line x1={0} y1={-index * CELL} x2={MAX_WORLD * CELL} y2={-index * CELL} style={NON_SCALING} />
+              <line x1={index * CELL} y1={0} x2={index * CELL} y2={-BASE} style={NON_SCALING} />
+              <line x1={0} y1={-index * CELL} x2={BASE} y2={-index * CELL} style={NON_SCALING} />
             </g>
           ))}
 
@@ -187,15 +141,6 @@ export function MapBoard({ hops, traveling, mood, celebrating, hidden }: MapBoar
           <CityDot at={PLACES.montevideu} />
           <MapLabel at={{ x: 7.05, y: 9.3 }} className="map-city-label" anchor="start">Montevidéu</MapLabel>
 
-          <g style={{ opacity: expanded }} aria-hidden={expanded < 0.5}>
-            {FAR_DOTS.map((dot) => <CityDot key={`${dot.x}`} at={dot} radius={5 * view.zoom} />)}
-            {FAR_LABELS.map((label) => (
-              <MapLabel key={label.text} at={label.at} className={label.className} anchor={label.anchor} size={label.size * view.zoom}>
-                {label.text}
-              </MapLabel>
-            ))}
-          </g>
-
           <g className={celebrating ? 'map-goal is-celebrating' : 'map-goal'} transform={`translate(${goal.x} ${goal.y})`}>
             <circle r="24" className="map-goal-halo" />
             <path d={STAR_PATH} className="map-goal-star" />
@@ -203,26 +148,7 @@ export function MapBoard({ hops, traveling, mood, celebrating, hidden }: MapBoar
         </g>
 
         <rect x="0" y={-BASE} width={BASE} height={BASE} rx="14" className="map-frame" style={NON_SCALING} />
-        <rect
-          x="0"
-          y={-worldSize}
-          width={worldSize}
-          height={worldSize}
-          rx={14 * view.zoom}
-          className="map-outer-frame"
-          style={{ ...NON_SCALING, opacity: expanded }}
-        />
-        <text
-          x={BASE - 10 * view.zoom}
-          y={-14 * view.zoom}
-          className="map-activity-tag"
-          textAnchor="end"
-          style={{ opacity: expanded, fontSize: 15 * view.zoom }}
-        >
-          mapa da atividade
-        </text>
-
-        <g style={{ opacity: axisOpacity }}>
+        <g>
           {indexes.map((index) => {
             const center = index * CELL + CELL / 2
             const row = GRID_SIZE - index

@@ -38,7 +38,7 @@ export default defineConfig({
       projects: [path.resolve(__dirname, "./tsconfig.json")],
     }) as PluginOption,
     tanstackStart({
-      // crawlLinks off: /jogo/ is a separate static app (built by `build:jogo`), not a route.
+      // crawlLinks off: /recurso-pedagogia/pingo/ is a separate static app (built by `build:jogo`), not a route.
       prerender: { enabled: true, crawlLinks: false },
       pages: [{ path: "/" }],
     }) as PluginOption,

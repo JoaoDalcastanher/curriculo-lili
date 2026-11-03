@@ -90,6 +90,16 @@ describe('interpretador', () => {
     expect(interpret(11_850).place).toBe('Gabão, África')
   })
 
+  test('qualquer distância maior que 3.150 km começa no globo', () => {
+    for (const km of [3151, 3300, 4500, 6000, 11_850, 22_000]) {
+      expect(interpret(km).scene).not.toBe('mapa')
+    }
+    expect(interpret(3300).scene).toBe('mundo')
+    expect(interpret(6000)).toMatchObject({ scene: 'mundo', sceneId: undefined, place: 'Salvador, Bahia' })
+    expect(interpret(11_850)).toMatchObject({ scene: 'mundo', sceneId: 'gabao' })
+    expect(interpret(3149).scene).toBe('mapa')
+  })
+
   test('depois da África, "poderia chegar até…"', () => {
     const result = interpret(22_000)
     expect(result.scene).toBe('mundo')

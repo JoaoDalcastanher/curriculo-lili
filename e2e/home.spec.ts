@@ -154,17 +154,17 @@ test.describe("Recurso pedagógico", () => {
     const section = page.getByRole("region", { name: "Recurso pedagógico" });
     await expect(section.getByRole("heading", { name: "A viagem do Pingo" })).toBeVisible();
     const play = section.getByRole("link", { name: "Jogar agora" });
-    await expect(play).toHaveAttribute("href", "/jogo/");
+    await expect(play).toHaveAttribute("href", "/recurso-pedagogia/pingo/");
 
     await play.click();
-    await expect(page).toHaveURL(/\/jogo\/$/);
+    await expect(page).toHaveURL(/\/recurso-pedagogia\/pingo\/$/);
     await expect(page).toHaveTitle("A viagem do Pingo");
     await expect(page.locator("#root")).not.toBeEmpty();
   });
 
-  test("/jogo sem barra também abre o jogo", async ({ page }) => {
-    await page.goto("/jogo");
-    await expect(page).toHaveURL(/\/jogo\/$/);
+  test("/recurso-pedagogia/pingo sem barra também abre o jogo", async ({ page }) => {
+    await page.goto("/recurso-pedagogia/pingo");
+    await expect(page).toHaveURL(/\/recurso-pedagogia\/pingo\/$/);
     await expect(page).toHaveTitle("A viagem do Pingo");
   });
 });

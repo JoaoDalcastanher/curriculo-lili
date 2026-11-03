@@ -124,7 +124,7 @@ export type PedagogicalResource = {
   kind: string;
   description: string;
   skills: string[];
-  /** Where the resource is served, e.g. "/jogo/". */
+  /** Where the resource is served, e.g. "/recurso-pedagogia/pingo/". */
   href: string;
   cta: string;
   image: Photo;

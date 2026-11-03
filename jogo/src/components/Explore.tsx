@@ -32,101 +32,173 @@ function nearestPlace(center: Coordinates): ExplorePlace | undefined {
   return ranked[0] && ranked[0].km <= SNAP_KM ? ranked[0].place : undefined
 }
 
-/* ---------- Terra: arraste o globo para levar o Pingo ---------- */
+/* ---------- Terra: arraste o Pingo pelo globo ---------- */
+
+/** A partir daqui (fração do raio), levar o Pingo para a borda faz o globo girar. */
+const EDGE_START = 0.65
+/** Quanto o globo gira por quadro quando o Pingo está bem na borda. */
+const EDGE_SPEED = 0.008
+
+function projectionFor(center: Coordinates) {
+  return geoOrthographic().scale(RADIUS).translate([SIZE / 2, SIZE / 2]).rotate([-center[0], -center[1]]).clipAngle(90)
+}
+
+/** Ponto do globo embaixo do dedo (preso à borda se o dedo sair do globo). */
+function pointUnder(screen: Coordinates, center: Coordinates): Coordinates | null {
+  const dx = screen[0] - SIZE / 2
+  const dy = screen[1] - SIZE / 2
+  const distance = Math.hypot(dx, dy)
+  const limit = RADIUS * 0.97
+  const factor = distance > limit ? limit / distance : 1
+  const inverted = projectionFor(center).invert?.([SIZE / 2 + dx * factor, SIZE / 2 + dy * factor])
+  return inverted ? [inverted[0], inverted[1]] : null
+}
+
 function EarthExplorer({ selected, onSelect }: { selected: ExplorePlace; onSelect: (place: ExplorePlace) => void }) {
-  const [center, setCenter] = useState<Coordinates>(toCoords(PATAGONIA.at ?? { lat: 0, lon: 0 }))
+  const start = toCoords(PATAGONIA.at ?? { lat: 0, lon: 0 })
+  const [center, setCenter] = useState<Coordinates>(start)
+  const [pingo, setPingo] = useState<Coordinates>(start)
   const [dragging, setDragging] = useState(false)
-  const dragRef = useRef<{ x: number; y: number; center: Coordinates; pin?: string; moved: boolean } | null>(null)
+  const centerRef = useRef(center)
+  const pingoRef = useRef(pingo)
+  const pointerRef = useRef<Coordinates | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const flightRef = useRef(0)
+  const dragFrameRef = useRef(0)
+  centerRef.current = center
+  pingoRef.current = pingo
 
-  /* Quando escolhem um lugar na lista, o Pingo "voa" até lá. */
-  useEffect(() => {
-    if (!selected.at || dragRef.current) {
+  /** Leva o Pingo (e o centro do globo) até `target`, suavemente. */
+  const flyTo = (target: Coordinates) => {
+    const fromCenter = centerRef.current
+    const fromPingo = pingoRef.current
+    if (geoDistance(fromCenter, target) < 0.01 && geoDistance(fromPingo, target) < 0.01) {
       return
     }
-    const target = toCoords(selected.at)
-    const from = center
-    if (geoDistance(from, target) < 0.01) {
-      return
-    }
-    const interpolate = geoInterpolate(from, target)
-    const duration = reducedMotion() ? 1 : 1400
+    const moveCenter = geoInterpolate(fromCenter, target)
+    const movePingo = geoInterpolate(fromPingo, target)
+    const duration = reducedMotion() ? 1 : 1200
     const startedAt = performance.now()
     cancelAnimationFrame(flightRef.current)
     const tick = (now: number) => {
       const t = Math.min(1, (now - startedAt) / duration)
       const eased = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2
-      setCenter(interpolate(eased))
+      setCenter(moveCenter(eased))
+      setPingo(movePingo(eased))
       if (t < 1) {
         flightRef.current = requestAnimationFrame(tick)
       }
     }
     flightRef.current = requestAnimationFrame(tick)
+  }
+
+  /* Quando escolhem um lugar (na lista ou soltando o Pingo perto), ele vai até lá. */
+  useEffect(() => {
+    if (!selected.at || pointerRef.current) {
+      return
+    }
+    flyTo(toCoords(selected.at))
     return () => cancelAnimationFrame(flightRef.current)
   }, [selected])
 
-  const projection = useMemo(
-    () => geoOrthographic().scale(RADIUS).translate([SIZE / 2, SIZE / 2]).rotate([-center[0], -center[1]]).clipAngle(90),
-    [center],
-  )
+  useEffect(() => () => cancelAnimationFrame(dragFrameRef.current), [])
+
+  const projection = useMemo(() => projectionFor(center), [center])
   const path = geoPath(projection)
+  const pingoOnScreen = projection(pingo) ?? [SIZE / 2, SIZE / 2]
 
-  const startDrag = (event: ReactPointerEvent<SVGSVGElement>) => {
+  const toScreen = (clientX: number, clientY: number): Coordinates | null => {
+    const rect = svgRef.current?.getBoundingClientRect()
+    if (!rect || rect.width === 0) {
+      return null
+    }
+    return [((clientX - rect.left) / rect.width) * SIZE, ((clientY - rect.top) / rect.height) * SIZE]
+  }
+
+  /** Enquanto arrasta: o Pingo fica embaixo do dedo; perto da borda, o globo gira para ele seguir. */
+  const dragFrame = () => {
+    const pointer = pointerRef.current
+    if (!pointer) {
+      return
+    }
+    const reach = Math.hypot(pointer[0] - SIZE / 2, pointer[1] - SIZE / 2) / RADIUS
+    const under = pointUnder(pointer, centerRef.current)
+    if (under && reach > EDGE_START) {
+      const speed = EDGE_SPEED * Math.min(1, (reach - EDGE_START) / (1 - EDGE_START))
+      const turned = geoInterpolate(centerRef.current, under)(speed)
+      const nextCenter: Coordinates = [turned[0], Math.max(-80, Math.min(80, turned[1]))]
+      centerRef.current = nextCenter
+      setCenter(nextCenter)
+    }
+    const next = pointUnder(pointer, centerRef.current)
+    if (next) {
+      pingoRef.current = next
+      setPingo(next)
+    }
+    dragFrameRef.current = requestAnimationFrame(dragFrame)
+  }
+
+  const grabPingo = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const screen = toScreen(event.clientX, event.clientY)
+    if (!screen) {
+      return
+    }
+    event.preventDefault()
     cancelAnimationFrame(flightRef.current)
-    const pin = event.target instanceof Element ? event.target.closest('[data-place-id]')?.getAttribute('data-place-id') ?? undefined : undefined
     event.currentTarget.setPointerCapture(event.pointerId)
-    dragRef.current = { x: event.clientX, y: event.clientY, center, pin, moved: false }
+    pointerRef.current = screen
     setDragging(true)
+    cancelAnimationFrame(dragFrameRef.current)
+    dragFrameRef.current = requestAnimationFrame(dragFrame)
   }
 
-  const moveDrag = (event: ReactPointerEvent<SVGSVGElement>) => {
-    const drag = dragRef.current
-    const svg = svgRef.current
-    if (!drag || !svg) {
+  const movePingo = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!pointerRef.current) {
       return
     }
-    if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 5) {
-      drag.moved = true
-    }
-    const scale = 180 / svg.getBoundingClientRect().width
-    const lon = drag.center[0] + (event.clientX - drag.x) * scale
-    const lat = Math.max(-85, Math.min(85, drag.center[1] - (event.clientY - drag.y) * scale))
-    setCenter([((lon + 540) % 360) - 180, lat])
+    pointerRef.current = toScreen(event.clientX, event.clientY) ?? pointerRef.current
   }
 
-  const endDrag = () => {
-    const drag = dragRef.current
-    dragRef.current = null
+  const dropPingo = () => {
+    if (!pointerRef.current) {
+      return
+    }
+    pointerRef.current = null
+    cancelAnimationFrame(dragFrameRef.current)
     setDragging(false)
-    const tapped = drag && !drag.moved && drag.pin ? EARTH_PLACES.find((item) => item.id === drag.pin) : undefined
-    if (tapped) {
-      onSelect(tapped)
+    const place = nearestPlace(pingoRef.current)
+    if (place && place.id !== selected.id) {
+      onSelect(place)
       return
     }
-    if (!drag?.moved) {
-      return
-    }
-    const place = nearestPlace(center)
+    flyTo(place?.at ? toCoords(place.at) : pingoRef.current)
+  }
+
+  /** Tocar num lugar do globo também leva o Pingo até lá. */
+  const tapPlace = (event: ReactPointerEvent<SVGSVGElement>) => {
+    const id = event.target instanceof Element ? event.target.closest('[data-place-id]')?.getAttribute('data-place-id') : null
+    const place = id ? EARTH_PLACES.find((item) => item.id === id) : undefined
     if (place) {
       onSelect(place)
     }
   }
 
-  const nearby = nearestPlace(center)
+  const nearby = nearestPlace(pingo)
 
   return (
-    <div className="explore-globe" data-testid="explorar-globo" data-center={`${center[1].toFixed(1)},${center[0].toFixed(1)}`}>
+    <div
+      className="explore-globe"
+      data-testid="explorar-globo"
+      data-center={`${center[1].toFixed(1)},${center[0].toFixed(1)}`}
+      data-pingo={`${pingo[1].toFixed(1)},${pingo[0].toFixed(1)}`}
+    >
       <svg
         ref={svgRef}
         viewBox={`0 0 ${SIZE} ${SIZE}`}
-        className={dragging ? 'globe-svg is-dragging' : 'globe-svg'}
+        className="globe-svg"
         role="img"
-        aria-label="Globo para explorar. Arraste para levar o Pingo."
-        onPointerDown={startDrag}
-        onPointerMove={moveDrag}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
+        aria-label="Globo para explorar. Arraste o Pingo para levá-lo pelo mundo."
+        onPointerUp={tapPlace}
       >
         <defs>
           <radialGradient id="explore-shade" cx="38%" cy="32%" r="75%">
@@ -163,11 +235,22 @@ function EarthExplorer({ selected, onSelect }: { selected: ExplorePlace; onSelec
           )
         })}
       </svg>
-      <div className={dragging ? 'explore-pingo is-dragging' : 'explore-pingo'} aria-hidden="true">
+      <div
+        className={dragging ? 'explore-pingo is-dragging' : 'explore-pingo'}
+        style={{ left: `${(pingoOnScreen[0] / SIZE) * 100}%`, top: `${(pingoOnScreen[1] / SIZE) * 100}%` }}
+        role="button"
+        tabIndex={-1}
+        aria-label="Pingo: arraste para levá-lo pelo mundo"
+        data-testid="explorar-pingo"
+        onPointerDown={grabPingo}
+        onPointerMove={movePingo}
+        onPointerUp={dropPingo}
+        onPointerCancel={dropPingo}
+      >
         <Penguin mood={dragging ? 'normal' : 'feliz'} className="globe-penguin-svg" />
       </div>
       <p className="explore-hint">
-        {dragging ? (nearby ? `Perto de ${nearby.name}…` : 'Nadando…') : 'Arraste o globo para levar o Pingo'}
+        {dragging ? (nearby ? `Perto de ${nearby.name}…` : 'Nadando…') : 'Arraste o Pingo para levá-lo pelo mundo'}
       </p>
     </div>
   )

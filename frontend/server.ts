@@ -30,7 +30,7 @@ export class StaticSiteServer {
       return new Response(file, { headers: this.cacheHeaders(url.pathname) });
     }
 
-    // A folder asked without the trailing slash (e.g. /jogo) goes to its index (/jogo/).
+    // A folder asked without the trailing slash (e.g. /recurso-pedagogia/pingo) goes to its index (/recurso-pedagogia/pingo/).
     const folderIndex = Bun.file(join(filePath, "index.html"));
     if (!url.pathname.endsWith("/") && (await folderIndex.exists())) {
       return Response.redirect(`${url.pathname}/${url.search}`, 301);
@@ -44,8 +44,8 @@ export class StaticSiteServer {
   }
 
   private cacheHeaders(pathname: string): Record<string, string> {
-    // Hashed bundles of the site (/assets/) and of the game (/jogo/assets/).
-    const isHashedAsset = /^\/(jogo\/)?assets\//.test(pathname);
+    // Hashed bundles of the site (/assets/) and of the game (/recurso-pedagogia/pingo/assets/).
+    const isHashedAsset = /^\/(recurso-pedagogia\/pingo\/)?assets\//.test(pathname);
     return {
       "Cache-Control": isHashedAsset
         ? "public, max-age=31536000, immutable"

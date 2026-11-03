@@ -67,6 +67,10 @@ function durationFor(interpretation: Interpretation): number {
   if (interpretation.scene === 'voltas') {
     return Math.min(16000, Math.max(5000, Math.min(interpretation.laps ?? 1, MAX_VISIBLE_LAPS) * 2400))
   }
+  if (!interpretation.destination) {
+    // Pela costa do Brasil: quanto mais longe, mais tempo (até chegar na África).
+    return 6000 + 9000 * Math.min(1, interpretation.km / PATH_END_KM)
+  }
   return 15000
 }
 
@@ -112,14 +116,16 @@ export function GlobeScene({ interpretation, animate, onProgress, onDone }: Glob
   const currentLap = Math.min(Math.floor(lapProgress), Math.ceil(visibleLaps) - 1)
   const lapFraction = lapProgress - currentLap
 
-  const kmNow = journey.totalKm * travel
+  // Pela costa, ele para exatamente na distância digitada; com destino, vai até o destino.
+  const targetKm = destination ? journey.totalKm : Math.min(interpretation.km, journey.totalKm)
+  const kmNow = targetKm * travel
   const penguin: Coordinates = isLaps ? ringPoint(Math.max(0, currentLap), lapFraction) : toCoords(pointAtKm(journey, kmNow))
   const center: Coordinates = penguin
   const greeting = isLaps
     ? undefined
     : progress >= 1 && destination
       ? `Cheguei em ${destination.name}!`
-      : kmNow < PATH_END_KM ? positionAtHops(kmNow / KM_PER_CELL).greeting : undefined
+      : kmNow <= PATH_END_KM ? positionAtHops(kmNow / KM_PER_CELL).greeting : undefined
 
   const projection = geoOrthographic()
     .scale(RADIUS)

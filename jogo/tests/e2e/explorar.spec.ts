@@ -19,19 +19,44 @@ test('escolher um destino leva o Pingo até lá e mostra o cartão', async ({ pa
   await expect(card).toContainText('quadradinhos')
 })
 
-test('arrastar o globo move o Pingo pelo mundo', async ({ page }) => {
+test('arrastar o Pingo leva ele pelo mundo (ele segue o dedo)', async ({ page }) => {
   const globe = page.getByTestId('explorar-globo')
-  const before = await globe.getAttribute('data-center')
-  const box = await globe.locator('svg.globe-svg').boundingBox()
+  const pingo = page.getByTestId('explorar-pingo')
+  const box = await pingo.boundingBox()
   expect(box).not.toBeNull()
   if (!box) {
     return
   }
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+  const startX = box.x + box.width / 2
+  const startY = box.y + box.height / 2
+  await page.mouse.move(startX, startY)
   await page.mouse.down()
-  await page.mouse.move(box.x + box.width / 2 - 150, box.y + box.height / 2 + 120, { steps: 8 })
+  // Para a direita e para cima: rumo ao Atlântico, mais ao norte.
+  await page.mouse.move(startX + 60, startY - 60, { steps: 8 })
+  await page.waitForTimeout(100)
+  const [lat, lon] = ((await globe.getAttribute('data-pingo')) ?? '').split(',').map(Number)
   await page.mouse.up()
-  await expect(globe).not.toHaveAttribute('data-center', before ?? '')
+  const [startLat, startLon] = [-42.7, -65]
+  expect(lat).toBeGreaterThan(startLat)
+  expect(lon).toBeGreaterThan(startLon)
+})
+
+test('soltar o Pingo perto de um lugar abre o cartão de lá', async ({ page }) => {
+  const pingo = page.getByTestId('explorar-pingo')
+  const target = page.getByTestId('pino-santa-catarina')
+  const from = await pingo.boundingBox()
+  const to = await target.boundingBox()
+  expect(from).not.toBeNull()
+  expect(to).not.toBeNull()
+  if (!from || !to) {
+    return
+  }
+  const id = await target.getAttribute('data-place-id')
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 10 })
+  await page.mouse.up()
+  await expect(page.getByTestId('explorar-cartao')).toHaveAttribute('data-place', id ?? '')
 })
 
 test('vai para o espaço e visita os planetas', async ({ page }) => {

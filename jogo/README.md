@@ -20,14 +20,14 @@ Tudo em **português** (interface, mensagens e testes). Não há suporte a ingl�
 
 ### Jogar
 
-Toda resposta termina do mesmo jeito: um **cartão-postal** de onde o Pingo parou.
+Toda resposta termina do mesmo jeito: um **cartão-postal** de onde o Pingo parou, que abre assim que a animação termina.
 
 | Distância | O que acontece |
 |---|---|
 | Menos que o caminho | Ele para no mar, no quadradinho exato. Cartão "Por pouco!" ou "Ainda falta nadar bastante…". |
-| Exatamente 3.150 km | Chega na Ponte Hercílio Luz: confete, faixa de **Parabéns!** e a conta no cartão. |
-| Um pouco mais | O mapa **se expande** pela costa do Brasil (Rio, Salvador, Natal, Equador) até o Gabão, na África. |
-| Depois da África | A viagem começa **direto no globo**. O Pingo nada pelo mar (Canal de Suez, Estreito de Gibraltar, Cabo da Boa Esperança…) até o lugar mais longe que dá para alcançar. Cada destino tem um cartão próprio. |
+| Exatamente 3.150 km | Chega na Ponte Hercílio Luz: confete e o cartão de **Parabéns!** com a conta. |
+| Mais que 3.150 km | A viagem começa **direto no globo**, saindo da Patagônia. Pela costa do Brasil (Paraná, Rio, Salvador, Natal, Equador) até o Gabão, na África, ele para exatamente na distância digitada. |
+| Depois da África | Ainda no globo, o Pingo nada pelo mar (Canal de Suez, Estreito de Gibraltar, Cabo da Boa Esperança…) até o lugar mais longe que dá para alcançar. Cada destino tem um cartão próprio. |
 | Mais longe que todos os destinos | **Voltas na Terra**, desenhadas no globo. |
 | A partir da Lua | **Espaço**: Lua, Vênus, Marte, Sol, Júpiter, Saturno, Netuno, Plutão e Proxima Centauri. |
 
@@ -35,7 +35,7 @@ Toda resposta termina do mesmo jeito: um **cartão-postal** de onde o Pingo paro
 
 Um passeio livre pelo mundinho do Pingo, sem conta:
 
-- arraste o globo para levar o Pingo; ao soltar perto de um lugar, ele mostra o cartão dele;
+- arraste o **Pingo** pelo globo (ele segue o dedo); levando-o até a borda, o globo gira devagar para ele continuar; ao soltar perto de um lugar, ele mostra o cartão dele;
 - ou toque num lugar da lista (no caminho, pelo mundo, no espaço);
 - na aba **Espaço**, arraste o Pingo de planeta em planeta.
 

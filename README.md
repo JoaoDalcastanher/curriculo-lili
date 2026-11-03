@@ -56,8 +56,8 @@ depoimento opcional.
 
 O jogo **A viagem do Pingo** (copiado do repositório `projeto-pinguim`) fica na pasta
 **`jogo/`**, com o código completo e as dependências próprias. O `bun run build` gera o
-site e depois o jogo dentro de `frontend/dist/client/jogo`, então ele fica no ar no
-mesmo endereço do site, em **`/jogo/`**. No site, a seção "Recurso pedagógico" tem o
+site e depois o jogo dentro de `frontend/dist/client/recurso-pedagogia/pingo`, então ele fica no ar no
+mesmo endereço do site, em **`/recurso-pedagogia/pingo/`**. No site, a seção "Recurso pedagógico" tem o
 botão **Jogar agora**. Os textos dessa seção ficam em `resource`, no `profile.ts`.
 
 Para mexer no jogo, veja `jogo/README.md` (`cd jogo && bun install && bun run dev`).
@@ -102,6 +102,6 @@ frontend/
   src/theme/       cores e fontes
   src/utils/       datas
   server.ts        servidor estático para produção
-jogo/              o jogo do Pingo (app Vite próprio, publicado em /jogo/)
+jogo/              o jogo do Pingo (app Vite próprio, publicado em /recurso-pedagogia/pingo/)
 e2e/               testes Playwright
 ```

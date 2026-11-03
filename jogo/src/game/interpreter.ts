@@ -69,23 +69,22 @@ function interpretShort(km: number): Interpretation {
   }
 }
 
+/** Passou de Santa Catarina: a viagem já começa no globo, nadando pela costa do Brasil até a África. */
 function interpretAlongCoast(km: number): Interpretation {
   const hops = kmToSquares(km)
-  const position = positionAtHops(hops)
-  const cell = cellName(position)
   const waypoint = WAYPOINTS.filter((item) => item.hops <= hops + 0.001).at(-1) ?? WAYPOINTS[WAYPOINTS.length - 1]
   const close = km <= ANSWER_KM + KM_PER_CELL
   const passed = WAYPOINTS.filter((item) => item.hops > GOAL_HOPS && item.hops <= hops + 0.001)
   return {
     kind: close ? 'quase-longe' : 'passou',
-    scene: 'mapa',
+    scene: 'mundo',
     km,
     squares: hops,
     place: waypoint.place,
     title: close ? 'Passou raspando!' : waypoint.title ?? 'Passou do ponto!',
     text: close ? 'Santa Catarina ficou um pouquinho para trás.' : waypoint.line ?? '',
     mood: close ? 'pensativo' : waypoint.mood ?? 'cansado',
-    facts: [swum(km), inKm(km), { label: 'Parou em', value: cell ? `Quadradinho ${cell}` : waypoint.place }],
+    facts: [swum(km), inKm(km), { label: 'Parou em', value: waypoint.place }],
     reachable: passed.map((item) => item.place).reverse(),
     sceneId: close ? undefined : waypoint.sceneId,
   }

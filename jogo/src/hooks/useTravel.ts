@@ -14,7 +14,7 @@ export function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-/** Até Santa Catarina ele nada devagar; depois acelera, para o mapa expandir sem demorar. */
+/** No mapa da atividade ele nada no ritmo de um quadradinho por vez. */
 export function travelDuration(hops: number): number {
   if (prefersReducedMotion()) {
     return REDUCED_DURATION
@@ -24,9 +24,9 @@ export function travelDuration(hops: number): number {
   return Math.max(MIN_DURATION, near + far)
 }
 
-/** Pausa entre a chegada e o cartão-postal, para dar tempo de ver o mapa. */
+/** O cartão-postal abre assim que a animação termina, sem espera. */
 export function postcardDelay(): number {
-  return prefersReducedMotion() ? 150 : 2400
+  return 0
 }
 
 /**

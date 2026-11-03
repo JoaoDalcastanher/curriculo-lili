@@ -8,7 +8,6 @@ test.beforeEach(async ({ page }) => {
 test('mostra o mapa, a legenda e o Pingo na Patagônia sem revelar a resposta', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'A viagem do Pingo' })).toBeVisible()
   await expect(page.getByTestId('legenda')).toHaveText('1 quadradinho = 150 km')
-  await expect(page.getByTestId('mapa')).toHaveAttribute('data-zoom', '1.00')
   expect(await hops(page)).toBe(0)
 
   const text = await page.locator('body').innerText()
@@ -38,7 +37,7 @@ test('distância curta: para no meio do mar, no quadradinho certo', async ({ pag
   await expect(postcard.getByRole('heading')).toHaveText('Ainda falta nadar bastante…')
 
   await postcard.getByRole('button', { name: 'Tentar de novo' }).click()
-  expect(await hops(page)).toBe(0)
+  await expect.poll(() => hops(page)).toBe(0)
   await expect(page.getByTestId('campo-km')).toBeFocused()
 })
 
@@ -61,19 +60,32 @@ test('acerto: confete, conta e jogar de novo', async ({ page }) => {
 
   await postcard.getByRole('button', { name: 'Ver o mapa' }).click()
   await expect(page.getByTestId('balao')).toHaveText('Cheguei em Santa Catarina!')
+  await expect(page.getByText('Parabéns!', { exact: true })).toHaveCount(0)
 
   await page.getByTestId('recomecar').click()
   await expect(page.getByTestId('campo-km')).toBeEnabled()
   await expect(page.getByTestId('campo-km')).toHaveValue('')
-  expect(await hops(page)).toBe(0)
+  await expect.poll(() => hops(page)).toBe(0)
 })
 
-test('passou do ponto: o mapa se expande pela costa do Brasil', async ({ page }) => {
-  await swim(page, '6000')
-  await expect(page.getByTestId('postal').getByTestId('lugar')).toHaveText('Salvador, Bahia')
-  const zoom = Number(await page.getByTestId('mapa').getAttribute('data-zoom'))
-  expect(zoom).toBeGreaterThan(1.5)
-  expect(await hops(page)).toBe(40)
+test('passou do ponto: vai direto para o globo e nada pela costa do Brasil', async ({ page }) => {
+  await page.getByTestId('campo-km').fill('6000')
+  await page.getByTestId('nadar').click()
+  await expect(page.getByTestId('globo')).toHaveAttribute('data-scene', 'mundo')
+  expect(await hops(page)).toBe(0)
+  const postcard = page.getByTestId('postal')
+  await expect(postcard).toBeVisible({ timeout: 15_000 })
+  await expect(postcard.getByTestId('lugar')).toHaveText('Salvador, Bahia')
+  await postcard.getByRole('button', { name: 'Ver o globo' }).click()
+  await expect(page.getByTestId('rastro-globo')).toBeVisible()
+})
+
+test('passou raspando de Santa Catarina: já é no globo', async ({ page }) => {
+  await swim(page, '3300')
+  await expect(page.getByTestId('globo')).toBeAttached()
+  await expect(page.getByTestId('postal')).toHaveAttribute('data-kind', 'quase-longe')
+  await expect(page.getByTestId('postal').getByTestId('lugar')).toHaveText('Litoral do Paraná')
+  expect(await hops(page)).toBe(0)
 })
 
 test('depois da África: globo com "poderia chegar até…"', async ({ page }) => {

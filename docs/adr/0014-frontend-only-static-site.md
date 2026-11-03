@@ -46,11 +46,11 @@ Presentation logic (sorting, stats) lives in the `ProfileService` class
 ### Build and hosting
 
 - `vite build` prerenders every route to static HTML in `frontend/dist/client`
-  (TanStack Start `prerender`; link crawling is off because `/jogo/` is not a route).
+  (TanStack Start `prerender`; link crawling is off because `/recurso-pedagogia/pingo/` is not a route).
 - The educational game "A viagem do Pingo" (copied from `projeto-pinguim`) lives in
   `jogo/` as its own Vite app with its own dependencies. `bun run build` builds it with
-  `BASE_PATH=/jogo/` into `frontend/dist/client/jogo`, so the same server hosts it at
-  `/jogo/`. The site links to it from the "Recurso pedagógico" section.
+  `BASE_PATH=/recurso-pedagogia/pingo/` into `frontend/dist/client/recurso-pedagogia/pingo`, so the same server hosts it at
+  `/recurso-pedagogia/pingo/`. The site links to it from the "Recurso pedagógico" section.
 - On Railway, `bun run start` runs `frontend/server.ts` — a small `Bun.serve` class that
   serves those files, honoring the `PORT` env var. No SSR at request time.
 - `railway.json` pins the build and start commands.

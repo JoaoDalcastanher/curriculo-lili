@@ -222,7 +222,7 @@ export const profile: Profile = {
     description:
       "O Pingo, um pinguim-de-magalhães, precisa nadar da Patagônia até Santa Catarina. A criança conta os quadradinhos do caminho, usa a escala do mapa (1 quadradinho = 150 km) e descobre quantos quilômetros ele vai nadar.",
     skills: ["Escala de mapa", "Multiplicação", "Localização no globo"],
-    href: "/jogo/",
+    href: "/recurso-pedagogia/pingo/",
     cta: "Jogar agora",
     image: {
       src: "/fotos/pingo-feliz.png",
