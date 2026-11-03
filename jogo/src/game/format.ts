@@ -59,3 +59,44 @@ export function parseKm(raw: string): number | null {
   }
   return value
 }
+
+const FEMININE = ['Linha', 'Volta', 'Lua', 'Cidade', 'Muralha', 'Patagônia', 'Groenlândia']
+const MASCULINE = ['Quadradinho', 'Rio', 'Gabão', 'Egito', 'Meio', 'Litoral', 'Sol', 'Mar', 'Polo', 'Deserto', 'Monte', 'Havaí', 'Cairo']
+const FEMININE_PLURAL = ['Ilhas']
+
+type Article = 'as' | 'a' | 'o' | ''
+
+function articleFor(place: string): Article {
+  const first = place.split(' ')[0]
+  if (FEMININE_PLURAL.includes(first)) {
+    return 'as'
+  }
+  if (FEMININE.includes(first)) {
+    return 'a'
+  }
+  return MASCULINE.includes(first) ? 'o' : ''
+}
+
+const FROM: Record<Article, string> = { as: 'das', a: 'da', o: 'do', '': 'de' }
+const IN: Record<Article, string> = { as: 'nas', a: 'na', o: 'no', '': 'em' }
+
+/** "do Quadradinho G6", "da Linha do Equador", "das Ilhas Malvinas", "de Natal". */
+export function prepositionFor(place: string): string {
+  return FROM[articleFor(place)]
+}
+
+/** "na Patagônia", "nas Ilhas Malvinas", "no Rio de Janeiro", "em Lagos". */
+export function inPlace(place: string): string {
+  return `${IN[articleFor(place)]} ${place}`
+}
+
+/** "da Patagônia", "das Ilhas Malvinas", "do Rio de Janeiro", "de Lagos". */
+export function fromPlace(place: string): string {
+  return `${FROM[articleFor(place)]} ${place}`
+}
+
+/** "até a Patagônia", "até as Ilhas Malvinas", "até o Rio de Janeiro", "até Lagos". */
+export function untilPlace(place: string): string {
+  const article = articleFor(place)
+  return article ? `até ${article} ${place}` : `até ${place}`
+}

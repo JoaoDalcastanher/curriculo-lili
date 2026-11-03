@@ -1,16 +1,15 @@
 import { geoDistance, geoGraticule10, geoOrthographic, geoPath, geoRotation } from 'd3-geo'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { formatLaps, formatSquares } from '../game/format'
-import { KM_PER_CELL } from '../game/config'
 import { EARTH_CIRCUMFERENCE_KM } from '../game/geo'
-import { journeyTo, MAP_JOURNEY, pointAtKm, traveledPoints } from '../game/journey'
-import { REACHED_DESTINATIONS } from '../game/interpreter'
-import { PATH_END_KM, positionAtHops } from '../game/route'
+import { journeyFor, pointAtKm, traveledPoints } from '../game/journey'
+import { onwardFrom, type Trip } from '../game/trip'
 import type { Interpretation, LatLon } from '../game/types'
 import { LAND } from '../game/world'
 import { Penguin } from './Penguin'
 
 type GlobeSceneProps = {
+  trip: Trip
   interpretation: Interpretation
   /** Quando falso, mostra o estado final direto (sem animar). */
   animate: boolean
@@ -69,12 +68,12 @@ function durationFor(interpretation: Interpretation): number {
   }
   if (!interpretation.destination) {
     // Pela costa do Brasil: quanto mais longe, mais tempo (até chegar na África).
-    return 6000 + 9000 * Math.min(1, interpretation.km / PATH_END_KM)
+    return 6000 + 9000 * Math.min(1, interpretation.km / 12_000)
   }
   return 15000
 }
 
-export function GlobeScene({ interpretation, animate, onProgress, onDone }: GlobeSceneProps) {
+export function GlobeScene({ trip, interpretation, animate, onProgress, onDone }: GlobeSceneProps) {
   const [progress, setProgress] = useState(animate ? 0 : 1)
   const doneRef = useRef(onDone)
   const progressRef = useRef(onProgress)
@@ -106,18 +105,15 @@ export function GlobeScene({ interpretation, animate, onProgress, onDone }: Glob
   const laps = interpretation.laps ?? 0
   const isLaps = interpretation.scene === 'voltas'
   const destination = interpretation.destination
-  const journey = useMemo(
-    () => (destination ? journeyTo(destination.id, destination.at) : MAP_JOURNEY),
-    [destination],
-  )
+  const journey = useMemo(() => journeyFor(trip, interpretation), [trip, interpretation])
   const travel = travelAt(progress)
   const visibleLaps = Math.min(laps, MAX_VISIBLE_LAPS)
   const lapProgress = visibleLaps * travel
   const currentLap = Math.min(Math.floor(lapProgress), Math.ceil(visibleLaps) - 1)
   const lapFraction = lapProgress - currentLap
 
-  // Pela costa, ele para exatamente na distância digitada; com destino, vai até o destino.
-  const targetKm = destination ? journey.totalKm : Math.min(interpretation.km, journey.totalKm)
+  // Com destino ele vai até o destino; senão para exatamente na distância digitada.
+  const targetKm = Math.min(interpretation.km, journey.totalKm)
   const kmNow = targetKm * travel
   const penguin: Coordinates = isLaps ? ringPoint(Math.max(0, currentLap), lapFraction) : toCoords(pointAtKm(journey, kmNow))
   const center: Coordinates = penguin
@@ -125,7 +121,9 @@ export function GlobeScene({ interpretation, animate, onProgress, onDone }: Glob
     ? undefined
     : progress >= 1 && destination
       ? `Cheguei em ${destination.name}!`
-      : kmNow <= PATH_END_KM ? positionAtHops(kmNow / KM_PER_CELL).greeting : undefined
+      : kmNow < 700
+        ? `Tchau, ${trip.from.name}!`
+        : Math.abs(kmNow - trip.answerKm) < 900 ? `Passando por ${trip.to.name}!` : undefined
 
   const projection = geoOrthographic()
     .scale(RADIUS)
@@ -139,7 +137,7 @@ export function GlobeScene({ interpretation, animate, onProgress, onDone }: Glob
 
   const traveled: Coordinates[] = isLaps ? [] : traveledPoints(journey, kmNow).map(toCoords)
   const fullRoute: Coordinates[] = journey.points.map(toCoords)
-  const reached = REACHED_DESTINATIONS.filter((item) => item.km <= interpretation.km)
+  const reached = [trip.to, ...onwardFrom(trip).filter((item) => item.km <= interpretation.km).map((item) => item.stop)]
   const destinationPoint = destination ? projection(toCoords(destination.at)) : null
 
   return (

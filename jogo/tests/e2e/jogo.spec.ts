@@ -84,7 +84,8 @@ test('passou raspando de Santa Catarina: já é no globo', async ({ page }) => {
   await swim(page, '3300')
   await expect(page.getByTestId('globo')).toBeAttached()
   await expect(page.getByTestId('postal')).toHaveAttribute('data-kind', 'quase-longe')
-  await expect(page.getByTestId('postal').getByTestId('lugar')).toHaveText('Litoral do Paraná')
+  await expect(page.getByTestId('postal').getByTestId('lugar')).toHaveText('Santa Catarina, Brasil')
+  await expect(page.getByTestId('postal').getByRole('heading')).toHaveText('Passou raspando!')
   expect(await hops(page)).toBe(0)
 })
 

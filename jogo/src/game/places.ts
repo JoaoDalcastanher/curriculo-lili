@@ -1,6 +1,7 @@
 import { GOAL_HOPS, KM_PER_CELL, WAYPOINTS } from './config'
 import { SPACE_BODIES } from './destinations'
-import { REACHED_DESTINATIONS } from './interpreter'
+import { STOPS } from './stops'
+import { squaresBetween } from './trip'
 import { ANSWER_KM, gridToLatLon, PATH } from './route'
 import type { LatLon, PenguinMood } from './types'
 
@@ -19,6 +20,9 @@ export type ExplorePlace = {
   at?: LatLon
   group: 'caminho' | 'mundo' | 'espaco'
 }
+
+/** Distância desde a Patagônia: a mesma resposta do jogo (quadradinhos × 150 km). */
+const fromPatagonia = (id: string) => squaresBetween('patagonia', id) * KM_PER_CELL
 
 const START: ExplorePlace = {
   id: 'patagonia',
@@ -50,24 +54,27 @@ const ALONG_THE_WAY: ExplorePlace[] = WAYPOINTS
     name: waypoint.place,
     region: 'No caminho do Pingo',
     line: waypoint.line ?? '',
-    km: waypoint.hops * KM_PER_CELL,
+    km: fromPatagonia(`caminho-${waypoint.hops}`),
     mood: waypoint.mood ?? 'normal',
     sceneId: waypoint.sceneId,
     at: gridToLatLon(PATH[waypoint.hops]),
     group: 'caminho' as const,
   }))
 
-const WORLD: ExplorePlace[] = REACHED_DESTINATIONS.map((destination) => ({
-  id: destination.id,
-  name: destination.name,
-  region: destination.region,
-  line: destination.line,
-  km: destination.km,
-  mood: destination.mood,
-  sceneId: destination.id,
-  at: destination.at,
-  group: 'mundo' as const,
-}))
+const WORLD: ExplorePlace[] = STOPS
+  .filter((stop) => stop.group === 'mundo')
+  .map((stop) => ({
+    id: stop.id,
+    name: stop.name,
+    region: stop.region,
+    line: stop.line,
+    km: fromPatagonia(stop.id),
+    mood: stop.mood,
+    sceneId: stop.sceneId,
+    at: stop.at,
+    group: 'mundo' as const,
+  }))
+  .sort((a, b) => a.km - b.km)
 
 export const EARTH_PLACES: readonly ExplorePlace[] = [START, GOAL, ...ALONG_THE_WAY, ...WORLD]
 

@@ -140,6 +140,33 @@ export const SEA_NODES = {
   POLE: { lat: 89.9, lon: 0 },
   SAT3: { lat: -45, lon: 0 },
   ANT: { lat: -68.5, lon: 0 },
+  // América do Sul, da Patagônia até o Nordeste, e a travessia até a África.
+  PATOFF: { lat: -43.3, lon: -63.6 },
+  SATS: { lat: -47.5, lon: -63.5 },
+  MALVOFF: { lat: -51.4, lon: -56.8 },
+  DRAKE: { lat: -55.6, lon: -63 },
+  ARG2: { lat: -38.8, lon: -56.5 },
+  URU: { lat: -35.6, lon: -53 },
+  RSOFF: { lat: -31.5, lon: -49.5 },
+  SCOFF: { lat: -27.6, lon: -47.9 },
+  PROFF: { lat: -25.8, lon: -47.6 },
+  RJOFF: { lat: -23.3, lon: -43.2 },
+  CFRIO: { lat: -23.3, lon: -41.6 },
+  ESOFF: { lat: -21, lon: -39.6 },
+  ABROL: { lat: -18.5, lon: -37.5 },
+  SSAOFF: { lat: -13.1, lon: -38.2 },
+  MACOFF: { lat: -10.2, lon: -35.3 },
+  PECOFF: { lat: -8, lon: -34.2 },
+  NATOFF: { lat: -5.6, lon: -34.6 },
+  EQ: { lat: 0, lon: -32 },
+  MIDATL: { lat: 2, lon: -20 },
+  // Pacífico: Cabo Horn, costa do Chile ao largo e a travessia até o Havaí.
+  HORN: { lat: -57.3, lon: -66.5 },
+  PACS0: { lat: -58, lon: -75 },
+  PACS1: { lat: -50, lon: -80 },
+  PACS2: { lat: -30, lon: -85 },
+  PACS3: { lat: -10, lon: -100 },
+  PAC4: { lat: 8, lon: -130 },
 } as const satisfies Record<string, LatLon>
 
 export type SeaNode = keyof typeof SEA_NODES
@@ -177,6 +204,13 @@ export const SEA_EDGES: readonly (readonly [SeaNode, SeaNode])[] = [
   ['NSEA', 'ELBE'], ['NSEA', 'JUTW'], ['JUTW', 'SKAG'], ['SKAG', 'KAT'], ['KAT', 'ORES'], ['ORES', 'BALT'], ['BALT', 'GOTL'],
   ['GOTL', 'FINL'], ['FINL', 'SPB'], ['NSEA', 'NORW'], ['NORW', 'NOR2'], ['NOR2', 'SVAL'], ['SVAL', 'POLE'],
   ['SATL2', 'SAT3'], ['SAT3', 'ANT'],
+  ['PATOFF', 'SATS'], ['PATOFF', 'ARG2'], ['SATS', 'MALVOFF'], ['SATS', 'DRAKE'], ['MALVOFF', 'DRAKE'], ['MALVOFF', 'ARG2'],
+  ['DRAKE', 'HORN'], ['DRAKE', 'ANT'], ['ARG2', 'URU'], ['URU', 'RSOFF'], ['URU', 'SAT3'], ['RSOFF', 'SCOFF'], ['SCOFF', 'PROFF'],
+  ['PROFF', 'RJOFF'], ['RJOFF', 'CFRIO'], ['CFRIO', 'ESOFF'], ['ESOFF', 'ABROL'], ['ABROL', 'SSAOFF'], ['SSAOFF', 'MACOFF'],
+  ['MACOFF', 'PECOFF'], ['PECOFF', 'NATOFF'], ['NATOFF', 'EQ'], ['NATOFF', 'DAK'], ['EQ', 'MIDATL'], ['EQ', 'MART'], ['EQ', 'MATL'],
+  ['MIDATL', 'WAF'], ['MIDATL', 'GG'], ['MIDATL', 'GAB'], ['ABROL', 'SATL2'],
+  ['HORN', 'PACS0'], ['PACS0', 'PACS1'], ['PACS1', 'PACS2'], ['PACS2', 'PACS3'], ['PACS3', 'LAOFF'], ['PACS3', 'PAC4'],
+  ['PAC4', 'HAWN'], ['PAC4', 'CALP'],
 ]
 
 /** Porto (ponto no mar ou na foz do rio) mais perto de cada destino. */
@@ -212,6 +246,21 @@ export const DESTINATION_PORTS: Readonly<Record<string, SeaNode>> = {
   havai: 'HAW',
 }
 
+/** Porto de cada lugar do caminho e das Malvinas (pontos no mar ao largo da costa). */
+export const STOP_PORTS: Readonly<Record<string, SeaNode>> = {
+  patagonia: 'PATOFF',
+  malvinas: 'MALVOFF',
+  'santa-catarina': 'SCOFF',
+  'caminho-22': 'PROFF',
+  'caminho-30': 'RJOFF',
+  'caminho-40': 'SSAOFF',
+  'caminho-46': 'NATOFF',
+  'caminho-52': 'EQ',
+  'caminho-58': 'MIDATL',
+  'caminho-79': 'GAB',
+  ...DESTINATION_PORTS,
+}
+
 type Graph = Map<SeaNode, { to: SeaNode; km: number }[]>
 
 function buildGraph(): Graph {
@@ -228,7 +277,7 @@ const GRAPH = buildGraph()
 
 type Shortest = { km: Map<SeaNode, number>; previous: Map<SeaNode, SeaNode> }
 
-/** Dijkstra a partir da chegada na África. */
+/** Dijkstra a partir de um ponto do mar. */
 function shortestFrom(start: SeaNode): Shortest {
   const km = new Map<SeaNode, number>([[start, 0]])
   const previous = new Map<SeaNode, SeaNode>()
@@ -272,6 +321,34 @@ export type SeaRoute = {
   seaKm: number
   /** Último trechinho do porto até o lugar (rio, gelo ou chão). */
   finalKm: number
+}
+
+const SHORTEST = new Map<SeaNode, Shortest>()
+
+function shortestCached(start: SeaNode): Shortest {
+  const cached = SHORTEST.get(start)
+  if (cached) {
+    return cached
+  }
+  const computed = shortestFrom(start)
+  SHORTEST.set(start, computed)
+  return computed
+}
+
+/** Pontos do mar entre dois portos, pelo caminho mais curto da rede. */
+export function seaPathBetween(from: SeaNode, to: SeaNode): LatLon[] {
+  const { previous } = shortestCached(from)
+  const nodes: SeaNode[] = [to]
+  let current: SeaNode = to
+  while (current !== from) {
+    const before = previous.get(current)
+    if (!before) {
+      throw new Error(`Sem caminho pelo mar entre ${from} e ${to}`)
+    }
+    nodes.unshift(before)
+    current = before
+  }
+  return nodes.map((node) => SEA_NODES[node])
 }
 
 export function seaRoute(destinationId: string, at: LatLon): SeaRoute {

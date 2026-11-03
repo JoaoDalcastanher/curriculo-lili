@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { prepositionFor } from '../game/format'
 import type { Interpretation } from '../game/types'
 import { PostcardStamp } from './PostcardStamp'
 
@@ -21,18 +22,6 @@ const LOOK_LABEL: Record<Interpretation['scene'], string> = {
   mundo: 'Ver o globo',
   voltas: 'Ver as voltas',
   espaco: 'Ver o espaço',
-}
-
-const FEMININE = ['Linha', 'Volta', 'Lua', 'Cidade', 'Muralha']
-const MASCULINE = ['Quadradinho', 'Rio', 'Gabão', 'Egito', 'Meio', 'Litoral', 'Sol', 'Mar', 'Polo', 'Deserto', 'Monte', 'Havaí']
-
-/** "do Quadradinho G6", "da Linha do Equador", "de Natal". */
-export function prepositionFor(place: string): string {
-  const first = place.split(' ')[0]
-  if (FEMININE.includes(first)) {
-    return 'da'
-  }
-  return MASCULINE.includes(first) ? 'do' : 'de'
 }
 
 /** O mesmo cartão-postal para qualquer resposta: certa, curta, longa ou absurda. */

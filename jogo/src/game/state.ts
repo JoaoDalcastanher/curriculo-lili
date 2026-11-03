@@ -1,4 +1,5 @@
 import { interpret } from './interpreter'
+import type { Trip } from './trip'
 import type { Interpretation } from './types'
 
 /**
@@ -17,7 +18,7 @@ export type GameState = {
 }
 
 export type GameAction =
-  | { type: 'nadar'; km: number }
+  | { type: 'nadar'; km: number; trip: Trip }
   | { type: 'mapa-fim' }
   | { type: 'cena-fim' }
   | { type: 'abrir-postal' }
@@ -47,7 +48,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (isTraveling(state) || hasWon(state)) {
         return state
       }
-      const interpretation = interpret(action.km)
+      const interpretation = interpret(action.km, action.trip)
       const phase: Phase = interpretation.scene === 'mapa' ? 'mapa' : 'cena'
       return { ...state, phase, tripId: state.tripId + 1, interpretation, postcardOpen: false }
     }

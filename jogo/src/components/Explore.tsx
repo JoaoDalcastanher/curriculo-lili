@@ -8,7 +8,7 @@ import { kmToSquares } from '../game/route'
 import type { LatLon } from '../game/types'
 import { LAND } from '../game/world'
 import { Penguin } from './Penguin'
-import { prepositionFor } from './Postcard'
+import { prepositionFor } from '../game/format'
 import { PostcardStamp } from './PostcardStamp'
 
 type Coordinates = [number, number]

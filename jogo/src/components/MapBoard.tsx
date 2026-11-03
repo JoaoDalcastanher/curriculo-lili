@@ -1,5 +1,6 @@
 import { COLUMN_LABELS, GOAL_HOPS, GRID_SIZE, PLACES, SOUTH_AMERICA, WAYPOINTS } from '../game/config'
 import { GOAL, PATH, positionAtHops, trailAtHops } from '../game/route'
+import type { TravelPosition } from '../game/types'
 import type { GridPoint, PenguinMood } from '../game/types'
 import { Penguin } from './Penguin'
 
@@ -15,6 +16,26 @@ type MapBoardProps = {
   celebrating: boolean
   /** Esconde os balões quando outra cena está por cima do mapa. */
   hidden: boolean
+  /** Volta: de Santa Catarina até a Patagônia, pelo mesmo caminho. */
+  reverse?: boolean
+  /** Quantos quadradinhos tem o caminho (só para os testes). */
+  squares?: number
+}
+
+/** Na volta o Pingo anda o mesmo caminho de trás para frente. */
+function backwards(hops: number): { position: TravelPosition; trail: GridPoint[] } {
+  const steps = Math.min(Math.max(0, hops), GOAL_HOPS)
+  const along = positionAtHops(GOAL_HOPS - steps)
+  const passed = PATH.slice(Math.ceil(GOAL_HOPS - steps), GOAL_HOPS + 1).reverse()
+  return {
+    position: {
+      x: along.x,
+      y: along.y,
+      hops: steps,
+      greeting: steps >= GOAL_HOPS - 0.001 ? 'Cheguei na Patagônia!' : steps < 2.5 ? 'Tchau, Santa Catarina!' : undefined,
+    },
+    trail: [...passed, { x: along.x, y: along.y }],
+  }
 }
 
 type Window = { x: number; y: number; width: number }
@@ -80,22 +101,23 @@ function CityDot({ at, radius = 6 }: { at: GridPoint; radius?: number }) {
   return <circle cx={svg.x} cy={svg.y} r={radius} className="map-city" style={NON_SCALING} />
 }
 
-export function MapBoard({ hops, traveling, mood, celebrating, hidden }: MapBoardProps) {
-  const position = positionAtHops(hops)
-  const trail = trailAtHops(hops)
+export function MapBoard({ hops, traveling, mood, celebrating, hidden, reverse = false, squares = GOAL_HOPS }: MapBoardProps) {
+  const back = reverse ? backwards(hops) : null
+  const position = back ? back.position : positionAtHops(hops)
+  const trail = back ? back.trail : trailAtHops(hops)
   const view = VIEW
   const bubbleLeft = position.x > 9
   const bubbleBelow = position.y > GRID_SIZE - 2
-  const goal = toSvg(GOAL)
+  const goal = toSvg(reverse ? PATH[0] : GOAL)
   const marginPercent = (MARGIN / view.width) * 100
 
   return (
-    <div className="map" data-testid="mapa">
+    <div className="map" data-testid="mapa" data-squares={squares}>
       <svg
         viewBox={`${view.x} ${view.y} ${view.width} ${view.width}`}
         className="map-svg"
         role="img"
-        aria-label="Mapa quadriculado da Patagônia até Santa Catarina"
+        aria-label={reverse ? 'Mapa quadriculado de Santa Catarina até a Patagônia' : 'Mapa quadriculado da Patagônia até Santa Catarina'}
       >
         <defs>
           <clipPath id="board">
