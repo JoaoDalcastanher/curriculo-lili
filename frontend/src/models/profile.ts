@@ -115,6 +115,21 @@ export type Projects = {
   items: Project[];
 };
 
+/** A teaching resource the visitor can open (e.g. the "A viagem do Pingo" game). */
+export type PedagogicalResource = {
+  title: string;
+  lead: string;
+  name: string;
+  /** e.g. "Jogo de navegador · Matemática e Geografia". */
+  kind: string;
+  description: string;
+  skills: string[];
+  /** Where the resource is served, e.g. "/jogo/". */
+  href: string;
+  cta: string;
+  image: Photo;
+};
+
 export type Degree = {
   kind: string;
   title: string;
@@ -158,6 +173,7 @@ export type Profile = {
   about: About;
   trajectory: Trajectory;
   projects: Projects;
+  resource: PedagogicalResource;
   education: Education;
   contact: Contact;
 };

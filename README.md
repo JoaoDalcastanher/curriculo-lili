@@ -52,6 +52,16 @@ Cada projeto tem um `id` (usado no link direto `/?projeto=<id>`), etiquetas (`ta
 que precisam estar em `projects.filters`, etapas, aprendizados, galeria e um
 depoimento opcional.
 
+### Recurso pedagógico — o jogo do Pingo
+
+O jogo **A viagem do Pingo** (copiado do repositório `projeto-pinguim`) fica na pasta
+**`jogo/`**, com o código completo e as dependências próprias. O `bun run build` gera o
+site e depois o jogo dentro de `frontend/dist/client/jogo`, então ele fica no ar no
+mesmo endereço do site, em **`/jogo/`**. No site, a seção "Recurso pedagógico" tem o
+botão **Jogar agora**. Os textos dessa seção ficam em `resource`, no `profile.ts`.
+
+Para mexer no jogo, veja `jogo/README.md` (`cd jogo && bun install && bun run dev`).
+
 ---
 
 ## Rodando
@@ -92,5 +102,6 @@ frontend/
   src/theme/       cores e fontes
   src/utils/       datas
   server.ts        servidor estático para produção
+jogo/              o jogo do Pingo (app Vite próprio, publicado em /jogo/)
 e2e/               testes Playwright
 ```

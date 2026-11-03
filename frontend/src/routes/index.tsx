@@ -7,6 +7,7 @@ import { EducationSection } from "@/components/home/EducationSection";
 import { HeroSection } from "@/components/home/HeroSection";
 import { ProjectDialog } from "@/components/home/ProjectDialog";
 import { ProjectsSection } from "@/components/home/ProjectsSection";
+import { ResourceSection } from "@/components/home/ResourceSection";
 import { SiteFooter } from "@/components/home/SiteFooter";
 import { SiteHeader } from "@/components/home/SiteHeader";
 import { TrajectorySection } from "@/components/home/TrajectorySection";
@@ -65,6 +66,7 @@ function HomePage() {
           formatAuthors={formatAuthors}
           onOpen={(id) => setOpen((current) => current ?? { id, instant: false })}
         />
+        <ResourceSection resource={data.resource} />
         <EducationSection
           education={data.education}
           formatDegreePeriod={(degree) => service.formatDegreePeriod(degree)}

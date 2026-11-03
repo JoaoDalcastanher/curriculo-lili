@@ -38,7 +38,8 @@ export default defineConfig({
       projects: [path.resolve(__dirname, "./tsconfig.json")],
     }) as PluginOption,
     tanstackStart({
-      prerender: { enabled: true, crawlLinks: true },
+      // crawlLinks off: /jogo/ is a separate static app (built by `build:jogo`), not a route.
+      prerender: { enabled: true, crawlLinks: false },
       pages: [{ path: "/" }],
     }) as PluginOption,
     react() as PluginOption,
