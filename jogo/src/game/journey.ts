@@ -3,7 +3,8 @@ import { KM_PER_CELL } from './config'
 import { greatCircleKm } from './geo'
 import { gridToLatLon, PATH, PATH_END_KM } from './route'
 import { seaRoute } from './sea'
-import type { LatLon } from './types'
+import { onwardFrom, routeKm, seaRouteBetween, type Trip } from './trip'
+import type { Interpretation, LatLon } from './types'
 
 /** Uma viagem completa: Patagônia → malha até a África → mar → destino. */
 export type Journey = {
@@ -48,4 +49,43 @@ export function pointAtKm(journey: Journey, km: number): LatLon {
 export function traveledPoints(journey: Journey, km: number): LatLon[] {
   const passed = journey.points.filter((_, index) => journey.kmAt[index] <= km)
   return [...passed, pointAtKm(journey, km)]
+}
+
+type Leg = { route: readonly LatLon[]; km: number }
+
+/** Junta trechos do globo; cada trecho é esticado para ter a distância da escala. */
+function joinLegs(legs: readonly Leg[]): Journey {
+  const points: LatLon[] = []
+  const kmAt: number[] = []
+  let base = 0
+  for (const leg of legs) {
+    const real = routeKm(leg.route) || 1
+    let walked = 0
+    leg.route.forEach((point, index) => {
+      if (index > 0) {
+        walked += greatCircleKm(leg.route[index - 1], point)
+      }
+      if (index === 0 && points.length > 0) {
+        return
+      }
+      points.push(point)
+      kmAt.push(base + (walked / real) * leg.km)
+    })
+    base += leg.km
+  }
+  return { points, kmAt, totalKm: base }
+}
+
+/**
+ * A viagem no globo: da saída até a chegada e, se passou do ponto, da chegada
+ * até o lugar alcançado (ou até o próximo lugar, se ainda não chegou em nenhum).
+ */
+export function journeyFor(trip: Trip, interpretation: Interpretation): Journey {
+  const legs: Leg[] = [{ route: trip.route, km: trip.answerKm }]
+  const target = interpretation.destination ?? onwardFrom(trip)[0]?.stop
+  const targetKm = interpretation.destination?.km ?? onwardFrom(trip)[0]?.km
+  if (target && targetKm !== undefined && interpretation.km > trip.answerKm) {
+    legs.push({ route: seaRouteBetween(trip.to, target), km: targetKm - trip.answerKm })
+  }
+  return joinLegs(legs)
 }

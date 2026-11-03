@@ -1,15 +1,20 @@
-import { useCallback, useEffect, useReducer, useState } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { Explore } from './components/Explore'
 import { Confetti } from './components/Confetti'
 import { ControlPanel } from './components/ControlPanel'
+import { DeparturePostcard } from './components/DeparturePostcard'
 import { GlobeScene } from './components/GlobeScene'
 import { MapBoard } from './components/MapBoard'
 import { Penguin } from './components/Penguin'
 import { Postcard } from './components/Postcard'
+import { RouteMap } from './components/RouteMap'
 import { SpaceScene } from './components/SpaceScene'
 import { KM_PER_CELL } from './game/config'
-import { kmToSquares, PATH_END_HOPS } from './game/route'
+import { kmToSquares } from './game/route'
 import { gameReducer, hasWon, initialState, isTraveling } from './game/state'
+import { fromPlace, untilPlace } from './game/format'
+import { DEFAULT_FROM, DEFAULT_TO } from './game/stops'
+import { buildTrip } from './game/trip'
 import { postcardDelay, useTravel } from './hooks/useTravel'
 
 function focusInput() {
@@ -19,10 +24,13 @@ function focusInput() {
 export default function App() {
   const [mode, setMode] = useState<'jogar' | 'explorar'>('jogar')
   const [state, dispatch] = useReducer(gameReducer, initialState)
+  const [route, setRoute] = useState({ from: DEFAULT_FROM, to: DEFAULT_TO })
+  const [departing, setDeparting] = useState(false)
+  const trip = useMemo(() => buildTrip(route.from, route.to), [route])
   const [sceneKm, setSceneKm] = useState(0)
   const interpretation = state.interpretation
   const onMap = interpretation !== null && interpretation.scene === 'mapa'
-  const targetHops = onMap ? Math.min(kmToSquares(interpretation.km), PATH_END_HOPS) : 0
+  const targetHops = onMap ? Math.min(kmToSquares(interpretation.km), trip.squares) : 0
 
   const mapDone = useCallback(() => dispatch({ type: 'mapa-fim' }), [])
   const sceneDone = useCallback(() => dispatch({ type: 'cena-fim' }), [])
@@ -50,6 +58,22 @@ export default function App() {
     dispatch({ type: 'recomecar' })
     focusInput()
   }
+  const changeRoute = (from: string, to: string) => {
+    if (from === to) {
+      return
+    }
+    setRoute({ from, to })
+    dispatch({ type: 'tentar-de-novo' })
+    setDeparting(true)
+  }
+  const go = () => {
+    setDeparting(false)
+    focusInput()
+  }
+  const swim = (km: number) => {
+    setDeparting(false)
+    dispatch({ type: 'nadar', km, trip })
+  }
 
   return (
     <div className="app">
@@ -58,7 +82,9 @@ export default function App() {
           <span className="brand-mark" aria-hidden="true"><Penguin mood="feliz" size={40} /></span>
           <div>
             <h1 className="brand-title">A viagem do Pingo</h1>
-            <p className="brand-subtitle">Da Patagônia até Santa Catarina</p>
+            <p className="brand-subtitle" data-testid="rota">
+              {`${fromPlace(trip.from.name).replace(/^d/, 'D')} ${untilPlace(trip.to.name)}`}
+            </p>
           </div>
         </div>
         <nav className="mode-switch" aria-label="Modo">
@@ -72,7 +98,12 @@ export default function App() {
       {mode === 'jogar' && (
       <main className="stage">
         <section className="board" aria-label="Mapa">
-          <MapBoard hops={hops} traveling={state.phase === 'mapa'} mood={mood} celebrating={won} hidden={showScene} />
+          {trip.classic && (
+            <MapBoard hops={hops} traveling={state.phase === 'mapa'} mood={mood} celebrating={won} hidden={showScene} reverse={trip.classic === 'volta'} />
+          )}
+          {!trip.classic && (
+            <RouteMap key={`${trip.from.id}-${trip.to.id}`} trip={trip} hops={hops} traveling={state.phase === 'mapa'} mood={mood} celebrating={won} hidden={showScene} />
+          )}
 
           {showScene && interpretation && (
             <div className="scene-layer" key={state.tripId}>
@@ -80,12 +111,14 @@ export default function App() {
                 <SpaceScene interpretation={interpretation} animate onProgress={setSceneKm} onDone={sceneDone} />
               )}
               {interpretation.scene !== 'espaco' && (
-                <GlobeScene interpretation={interpretation} animate onProgress={setSceneKm} onDone={sceneDone} />
+                <GlobeScene trip={trip} interpretation={interpretation} animate onProgress={setSceneKm} onDone={sceneDone} />
               )}
             </div>
           )}
 
           {won && <Confetti />}
+
+          {departing && !traveling && <DeparturePostcard trip={trip} onGo={go} />}
 
           {state.postcardOpen && interpretation && (
             <Postcard
@@ -98,11 +131,14 @@ export default function App() {
         </section>
 
         <ControlPanel
-          key={state.gameId}
+          key={`${state.gameId}-${trip.from.id}-${trip.to.id}`}
+          fromId={trip.from.id}
+          toId={trip.to.id}
+          onRoute={changeRoute}
           traveling={traveling}
           locked={won}
           odometerKm={odometerKm}
-          onSwim={(km) => dispatch({ type: 'nadar', km })}
+          onSwim={swim}
           onRestart={restart}
         />
       </main>

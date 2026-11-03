@@ -1,16 +1,36 @@
 # A viagem do Pingo
 
 Jogo de navegador para crianças praticarem **escala de mapa**. O Pingo, um
-pinguim-de-magalhães, precisa nadar da Patagônia até Santa Catarina. A criança
-conta os quadradinhos do caminho, usa a legenda (`1 quadradinho = 150 km`) e
-digita quantos quilômetros ele vai nadar. O Pingo nada exatamente essa
-distância, sempre pela água.
+pinguim-de-magalhães, precisa nadar de um lugar até outro — por padrão, da
+Patagônia até Santa Catarina, mas **dá para escolher a saída e a chegada**
+entre todos os lugares da Terra do jogo. A criança conta os quadradinhos do
+caminho, usa a legenda (`1 quadradinho = 150 km`) e digita quantos quilômetros
+ele vai nadar. O Pingo nada exatamente essa distância, sempre pela água.
 
 **A escala é lei:** no mapa, o Pingo só anda na horizontal ou na vertical, de
 quadradinho em quadradinho, e cada 150 km são exatamente 1 quadradinho. Toda
 distância do jogo (no mapa, no globo e no espaço) aparece em quadradinhos.
 
-Resposta certa: **21 quadradinhos = 3.150 km**.
+Resposta certa no percurso da atividade (Patagônia → Santa Catarina):
+**21 quadradinhos = 3.150 km**. Nas outras rotas, a resposta é o número de
+quadradinhos do caminho × 150 km.
+
+## Saída e chegada
+
+- No painel, **Saída** e **Chegada** listam todos os lugares da Terra (os do
+  caminho, as Ilhas Malvinas e os do mundo). O botão ⇄ inverte os dois.
+- Ao trocar a rota aparece o **cartão de partida**: o selo do lugar de saída e
+  o mesmo texto para qualquer rota. O **Parabéns** também é um só, com o selo
+  da chegada: "O Pingo saiu de X e chegou em Y!".
+- **Patagônia ↔ Santa Catarina** usa o mapa e o percurso originais da
+  atividade (A–O, 1–15). As outras rotas ganham um **mapa automático** com a
+  costa de verdade, sempre com 1 quadradinho = 150 km: o caminho segue a rede
+  de rotas pelo mar e vira degraus de 1 quadradinho (só horizontal e vertical).
+- Em rotas com mais de 40 quadradinhos aparecem **bolinhas de 10 em 10** no
+  caminho, para contar de 10 em 10.
+- Passou da chegada? O Pingo continua pelo globo e os lugares do mundo ficam
+  na distância **proporcional**: quadradinhos até a chegada + quadradinhos da
+  chegada até cada lugar.
 
 ## Linguagem / Language
 
@@ -25,9 +45,9 @@ Toda resposta termina do mesmo jeito: um **cartão-postal** de onde o Pingo paro
 | Distância | O que acontece |
 |---|---|
 | Menos que o caminho | Ele para no mar, no quadradinho exato. Cartão "Por pouco!" ou "Ainda falta nadar bastante…". |
-| Exatamente 3.150 km | Chega na Ponte Hercílio Luz: confete e o cartão de **Parabéns!** com a conta. |
-| Mais que 3.150 km | A viagem começa **direto no globo**, saindo da Patagônia. Pela costa do Brasil (Paraná, Rio, Salvador, Natal, Equador) até o Gabão, na África, ele para exatamente na distância digitada. |
-| Depois da África | Ainda no globo, o Pingo nada pelo mar (Canal de Suez, Estreito de Gibraltar, Cabo da Boa Esperança…) até o lugar mais longe que dá para alcançar. Cada destino tem um cartão próprio. |
+| Exatamente a resposta | Chega na chegada: confete e o cartão de **Parabéns!** com o selo do lugar e a conta. |
+| Um pouco mais | A viagem vai **direto para o globo**: "Passou raspando!" ou "Passou do ponto!". |
+| Mais ainda | No globo, o Pingo segue pelo mar até o lugar mais longe que dá para alcançar, com o cartão próprio de cada lugar. |
 | Mais longe que todos os destinos | **Voltas na Terra**, desenhadas no globo. |
 | A partir da Lua | **Espaço**: Lua, Vênus, Marte, Sol, Júpiter, Saturno, Netuno, Plutão e Proxima Centauri. |
 
@@ -38,6 +58,9 @@ Um passeio livre pelo mundinho do Pingo, sem conta:
 - arraste o **Pingo** pelo globo (ele segue o dedo); levando-o até a borda, o globo gira devagar para ele continuar; ao soltar perto de um lugar, ele mostra o cartão dele;
 - ou toque num lugar da lista (no caminho, pelo mundo, no espaço);
 - na aba **Espaço**, arraste o Pingo de planeta em planeta.
+- clique no selo do cartão para abrir o cartão-postal grande;
+- nas **Ilhas Malvinas** mora a **Pinga**, a namorada do Pingo (de flor na
+  cabeça e cachecol vermelho).
 
 Não tem backend: é só front-end estático.
 
@@ -76,13 +99,16 @@ bunx playwright install chromium
 | Resposta certa (passos até Santa Catarina × 150 km) | `src/game/route.ts` |
 | Interpretador: distância → lugar, cartão, voltas, planetas | `src/game/interpreter.ts` |
 | Destinos do mundo e corpos do espaço (textos dos cartões) | `src/game/destinations.ts` |
-| Rede de rotas pelo mar e porto de cada destino | `src/game/sea.ts` |
+| Rede de rotas pelo mar e porto de cada lugar | `src/game/sea.ts` |
+| Lugares de saída e chegada (inclui as Ilhas Malvinas) | `src/game/stops.ts` |
+| Viagem entre dois lugares: degraus, resposta, "passou do ponto" | `src/game/trip.ts` |
+| Mapa automático das rotas novas (bolinhas de 10 em 10) | `src/components/RouteMap.tsx` |
 | Desenhos dos cartões-postais | `src/components/scenes/PlaceScenes.tsx` |
 | Desenhos do Pingo | `src/components/Penguin.tsx` |
 
-Depois da África, a distância até cada destino é: o caminho na malha
-(79 quadradinhos = 11.850 km) + o caminho pelo mar até o porto mais próximo +
-o trechinho do porto até o lugar. Um teste garante que nenhum trecho de mar
+Cada lugar tem um porto (um ponto no mar ao largo da costa). O caminho entre
+dois lugares é: lugar → porto → caminho mais curto pela rede de mar → porto →
+lugar, desenhado em degraus no quadriculado. Um teste garante que nenhum trecho de mar
 passa por cima de terra (fora canais estreitos demais para o mapa-múndi
 simplificado, listados em `NARROW_EDGES`).
 

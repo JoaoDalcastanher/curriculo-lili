@@ -1964,6 +1964,97 @@ function SantaCatarina() {
   )
 }
 
+/* ---------- Ilhas Malvinas: o Pingo leva um peixe para a Pinga ---------- */
+function Heart({ x, y, size, color = '#ef5f7a' }: { x: number; y: number; size: number; color?: string }) {
+  const k = size / 10
+  return (
+    <path
+      transform={`translate(${x} ${y}) scale(${k})`}
+      d="M0 3 C0 -2 -6 -4 -8 0 C-10 4 -6 8 0 12 C6 8 10 4 8 0 C6 -4 0 -2 0 3 Z"
+      fill={color}
+    />
+  )
+}
+
+/** Bochechas rosadas (coordenadas do PingoFigure). */
+const BLUSH = (
+  <g fill="#ff8fa3" opacity="0.75">
+    <ellipse cx="39" cy="55" rx="6" ry="3.4" />
+    <ellipse cx="81" cy="55" rx="6" ry="3.4" />
+  </g>
+)
+
+/** Peixe na nadadeira levantada (coordenadas do PingoFigure). */
+const FISH = (
+  <g transform="translate(116 30) rotate(-28)">
+    <path d="M-18 0 Q-4 -12 14 0 Q-4 12 -18 0 Z" fill="#9fb8c8" stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+    <path d="M12 0 L26 -10 L24 0 L26 10 Z" fill="#9fb8c8" stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+    <path d="M-4 -7 Q0 0 -4 7" fill="none" stroke={INK} strokeWidth="1.6" />
+    <circle cx="-11" cy="-2" r="2" fill={INK} />
+  </g>
+)
+
+/** Flor das ilhas na cabeça da Pinga (coordenadas do PingoFigure). */
+const FLOWER = (
+  <g transform="translate(80 16)">
+    {[0, 72, 144, 216, 288].map((angle) => (
+      <ellipse key={angle} cx="0" cy="-8" rx="6" ry="8.5" fill="#ff8fb8" stroke={INK} strokeWidth="1.6" transform={`rotate(${angle})`} />
+    ))}
+    <circle r="5" fill="#f6c445" stroke={INK} strokeWidth="1.6" />
+  </g>
+)
+
+/** Cachecol vermelho da Pinga (coordenadas do PingoFigure). */
+const SCARF = (
+  <g stroke={INK} strokeWidth="1.8" strokeLinejoin="round">
+    <path d="M32 60 Q60 78 88 60 L90 70 Q60 90 30 70 Z" fill="#e2574c" />
+    <path d="M70 76 L80 104 L68 104 L62 80 Z" fill="#e2574c" />
+    <path d="M70 102 h10 M69 98 h10" stroke="#fff" strokeWidth="1.6" />
+  </g>
+)
+
+/** A Pinga de flor na cabeça e cachecol vermelho, na porta da toca. */
+function Malvinas() {
+  return (
+    <Stamp
+      transform="translate(2 74) scale(0.5)"
+      background={(
+        <g>
+          <Sky id="malvinas" top="#c3d6e4" bottom="#eef4f8" />
+          <circle cx="112" cy="26" r="11" fill="#fff6dc" />
+          <path d="M0 66 Q22 50 46 60 Q70 46 96 58 Q118 48 140 56 V84 H0 Z" fill="#8bb06a" />
+          <rect y="80" width="140" height="16" fill="#7fb0cc" />
+          <path d="M0 82 q10 -4 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" fill="none" stroke="#fff" strokeWidth="1.4" opacity="0.9" />
+          <path d="M0 96 Q40 88 80 94 T140 92 V170 H0 Z" fill="#a8cb84" />
+          <path d="M0 150 Q50 140 100 148 T140 146 V170 H0 Z" fill="#efe6cf" />
+          <path d="M84 132 Q90 94 118 92 Q142 92 146 132 Z" fill="#7fa35c" />
+          <path d="M112 132 Q112 110 126 110 Q140 110 140 132 Z" fill="#3b2a1e" />
+          <path d="M112 132 Q112 110 126 110 Q140 110 140 132" fill="none" stroke="#5f8443" strokeWidth="2.4" />
+          {[[8, 104], [30, 114], [98, 108], [132, 112], [56, 104]].map(([x, y]) => (
+            <path key={`${x}-${y}`} d={`M${x} ${y} l-3 -9 M${x} ${y} l0 -11 M${x} ${y} l3 -9`} stroke="#6c9450" strokeWidth="1.6" strokeLinecap="round" />
+          ))}
+          <g transform="translate(64 76) scale(0.5)">
+            <PingoFigure eyes="happy" flippers="left-up">
+              {BLUSH}
+              {SCARF}
+              {FLOWER}
+            </PingoFigure>
+          </g>
+          <Heart x={66} y={70} size={9} />
+          <Heart x={76} y={58} size={6} color="#ff8fa3" />
+          <Heart x={58} y={52} size={5} color="#ff8fa3" />
+        </g>
+      )}
+      figure={(
+        <PingoFigure flippers="right-up" eyes="closed">
+          {BLUSH}
+          {FISH}
+        </PingoFigure>
+      )}
+    />
+  )
+}
+
 /** Cena de cada destino (id em destinations.ts). */
 export const PLACE_SCENES: Readonly<Record<string, () => ReactNode>> = {
   lagos: Lagos,
@@ -2005,4 +2096,5 @@ export const PLACE_SCENES: Readonly<Record<string, () => ReactNode>> = {
   mexico: Mexico,
   pequim: Pequim,
   singapura: Singapura,
+  malvinas: Malvinas,
 }

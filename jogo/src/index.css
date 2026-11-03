@@ -173,6 +173,25 @@ input {
   pointer-events: none;
 }
 
+.map-legend-note {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.map-tick circle {
+  fill: #fff;
+  stroke: #2f6fd6;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-tick text {
+  font-family: var(--font-display);
+  font-weight: 750;
+  fill: #2f6fd6;
+}
+
 .map-legend-bar {
   display: block;
   height: 7px;
@@ -476,6 +495,73 @@ input {
   margin: -4px 0 0;
   color: var(--ink-soft);
   line-height: 1.5;
+}
+
+.route-pick {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'saida trocar' 'chegada trocar';
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 2px;
+}
+
+.route-pick > :first-child {
+  grid-area: saida;
+}
+
+.route-pick > .route-swap {
+  grid-area: trocar;
+  align-self: center;
+  margin-top: 18px;
+}
+
+.route-pick > :last-child {
+  grid-area: chegada;
+}
+
+.route-field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.route-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.route-field select {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--ink-faint);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.route-swap {
+  width: 40px;
+  height: 64px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--ink-faint);
+  font-size: 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.route-field select:disabled,
+.route-swap:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .swim-form {

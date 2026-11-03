@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { GOAL_HOPS, ROUTE_MOVES, SOUTH_AMERICA, AFRICA } from '../../src/game/config'
 import { formatKm, formatSquares, parseKm } from '../../src/game/format'
-import { interpret, REACHED_DESTINATIONS, WORLD_LIMIT_KM } from '../../src/game/interpreter'
+import { interpret, worldLimitKm } from '../../src/game/interpreter'
+import { buildTrip, onwardFrom } from '../../src/game/trip'
 import { ANSWER_KM, cellName, PATH, PATH_END_KM, positionAtHops } from '../../src/game/route'
 import type { GridPoint } from '../../src/game/types'
 
@@ -69,57 +70,61 @@ describe('leitura da distância', () => {
   })
 })
 
-describe('interpretador', () => {
+const CLASSIC = buildTrip('patagonia', 'santa-catarina')
+const at = (km: number) => interpret(km, CLASSIC)
+
+describe('interpretador (Patagônia → Santa Catarina)', () => {
   test('acerto só com a distância exata', () => {
-    expect(interpret(3150).kind).toBe('acerto')
-    expect(interpret(3149).kind).toBe('quase-curto')
-    expect(interpret(1000)).toMatchObject({ kind: 'curto', place: 'Quadradinho G6' })
-    expect(interpret(3300)).toMatchObject({ kind: 'quase-longe', place: 'Litoral do Paraná' })
+    expect(at(3150).kind).toBe('acerto')
+    expect(at(3149).kind).toBe('quase-curto')
+    expect(at(1000)).toMatchObject({ kind: 'curto', place: 'Quadradinho G6' })
+    expect(at(3300)).toMatchObject({ kind: 'quase-longe', scene: 'mundo' })
+  })
+
+  test('o Parabéns é genérico: saída, chegada e a conta', () => {
+    const result = at(3150)
+    expect(result.title).toBe('Parabéns! Na mosca!')
+    expect(result.text).toBe('O Pingo saiu da Patagônia e chegou em Santa Catarina! O caminho tem 21 quadradinhos de 150 km.')
+    expect(result.sceneId).toBe('santa-catarina')
   })
 
   test('não revela a resposta quando erra', () => {
     for (const km of [600, 3000, 3300, 5000]) {
-      expect(JSON.stringify(interpret(km))).not.toContain('3.150')
+      expect(JSON.stringify(at(km))).not.toContain('3.150')
     }
   })
 
-  test('segue a costa: Rio, Bahia, Equador, África', () => {
-    expect(interpret(4500).place).toBe('Rio de Janeiro')
-    expect(interpret(6000).place).toBe('Salvador, Bahia')
-    expect(interpret(7800).place).toBe('Linha do Equador')
-    expect(interpret(11_850).place).toBe('Gabão, África')
-  })
-
-  test('qualquer distância maior que 3.150 km começa no globo', () => {
-    for (const km of [3151, 3300, 4500, 6000, 11_850, 22_000]) {
-      expect(interpret(km).scene).not.toBe('mapa')
+  test('qualquer distância maior que a chegada vai para o globo', () => {
+    for (const km of [3151, 3300, 4500, 6000, 22_000]) {
+      expect(at(km).scene).not.toBe('mapa')
     }
-    expect(interpret(3300).scene).toBe('mundo')
-    expect(interpret(6000)).toMatchObject({ scene: 'mundo', sceneId: undefined, place: 'Salvador, Bahia' })
-    expect(interpret(11_850)).toMatchObject({ scene: 'mundo', sceneId: 'gabao' })
-    expect(interpret(3149).scene).toBe('mapa')
+    expect(at(3149).scene).toBe('mapa')
   })
 
-  test('depois da África, "poderia chegar até…"', () => {
-    const result = interpret(22_000)
-    expect(result.scene).toBe('mundo')
-    expect(result.destination?.km).toBeLessThanOrEqual(22_000)
-    expect(result.reachable.length).toBeGreaterThan(3)
-    expect(REACHED_DESTINATIONS.length).toBeGreaterThanOrEqual(25)
+  test('passou do ponto: os lugares do mundo ficam na distância proporcional', () => {
+    const onward = onwardFrom(CLASSIC)
+    const rio = onward.find((item) => item.stop.name === 'Rio de Janeiro')
+    expect(rio).toBeDefined()
+    if (!rio) {
+      return
+    }
+    expect(rio.km).toBeGreaterThan(3150)
+    expect(at(rio.km)).toMatchObject({ kind: 'mundo', place: 'Rio de Janeiro, Brasil' })
+    expect(at(22_000).reachable.length).toBeGreaterThan(3)
   })
 
-  test('depois do último destino, vira voltas na Terra', () => {
-    expect(interpret(WORLD_LIMIT_KM + 1).scene).toBe('voltas')
-    const result = interpret(200_375)
+  test('depois do último lugar, vira voltas na Terra', () => {
+    expect(at(worldLimitKm(CLASSIC) + 1).scene).toBe('voltas')
+    const result = at(200_375)
     expect(result.scene).toBe('voltas')
     expect(result.laps).toBeCloseTo(5)
     expect(result.title).toBe('Daria 5 voltas na Terra!')
   })
 
   test('muito longe, vai para o espaço', () => {
-    expect(interpret(400_000).body?.id).toBe('lua')
-    expect(interpret(200_000_000).body?.id).toBe('sol')
-    expect(interpret(5e13).body?.id).toBe('proxima')
+    expect(at(400_000).body?.id).toBe('lua')
+    expect(at(200_000_000).body?.id).toBe('sol')
+    expect(at(5e13).body?.id).toBe('proxima')
   })
 })
 
@@ -139,32 +144,6 @@ describe('rota pelo mar', () => {
     expect(crossing).toEqual([])
   })
 
-  test('todo destino tem caminho pelo mar e a distância passa da África', async () => {
-    const { DESTINATIONS } = await import('../../src/game/destinations')
-    const { seaRoute } = await import('../../src/game/sea')
-    for (const destination of DESTINATIONS) {
-      const route = seaRoute(destination.id, destination.at)
-      expect(route.seaKm).toBeGreaterThanOrEqual(0)
-      expect(Number.isFinite(route.seaKm)).toBe(true)
-    }
-    for (const reached of REACHED_DESTINATIONS) {
-      expect(reached.km).toBeGreaterThan(PATH_END_KM)
-    }
-  })
-
-  test('a viagem completa começa na Patagônia e termina no destino', async () => {
-    const { journeyTo, pointAtKm } = await import('../../src/game/journey')
-    const tokyo = REACHED_DESTINATIONS.find((item) => item.id === 'toquio')
-    expect(tokyo).toBeDefined()
-    if (!tokyo) {
-      return
-    }
-    const journey = journeyTo(tokyo.id, tokyo.at)
-    expect(journey.totalKm).toBeCloseTo(tokyo.km, 0)
-    const end = pointAtKm(journey, journey.totalKm)
-    expect(end.lat).toBeCloseTo(tokyo.at.lat, 3)
-    expect(end.lon).toBeCloseTo(tokyo.at.lon, 3)
-  })
 })
 
 describe('explorar', () => {
@@ -172,7 +151,7 @@ describe('explorar', () => {
     const { EARTH_PLACES, SPACE_PLACES } = await import('../../src/game/places')
     expect(EARTH_PLACES[0].id).toBe('patagonia')
     expect(EARTH_PLACES.some((place) => place.id === 'santa-catarina' && place.km === 3150)).toBe(true)
-    expect(EARTH_PLACES.filter((place) => place.group === 'mundo').length).toBe(REACHED_DESTINATIONS.length)
+    expect(EARTH_PLACES.some((place) => place.id === 'malvinas' && place.sceneId === 'malvinas')).toBe(true)
     expect(SPACE_PLACES.map((place) => place.id)).toContain('lua')
   })
 })

@@ -89,3 +89,11 @@ test('clicar no selo abre o cartão-postal do lugar', async ({ page }) => {
   await page.getByRole('dialog').getByRole('button', { name: 'Fechar' }).click()
   await expect(page.getByTestId('explorar-postal')).toBeHidden()
 })
+
+test('as Ilhas Malvinas estão no Explorar, com a Pinga', async ({ page }) => {
+  await page.getByTestId('ir-malvinas').click()
+  const card = page.getByTestId('explorar-cartao')
+  await expect(card).toHaveAttribute('data-place', 'malvinas')
+  await expect(card).toContainText('Levou o maior peixe do mar até a toca da Pinga.')
+  await expect(card.locator('.postcard-stamp.is-place')).toBeVisible()
+})

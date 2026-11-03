@@ -50,7 +50,14 @@ export type Destination = {
   mood: PenguinMood
 }
 
-export type ReachedDestination = Destination & {
+/** Um lugar da Terra que pode ser saída ou chegada da viagem. */
+export type Stop = Destination & {
+  /** Cena própria do cartão-postal (PLACE_SCENES), quando existe. */
+  sceneId?: string
+  group: 'caminho' | 'mundo'
+}
+
+export type ReachedDestination = Stop & {
   /** Distância total desde a Patagônia, seguindo o percurso (km). */
   km: number
   squares: number
