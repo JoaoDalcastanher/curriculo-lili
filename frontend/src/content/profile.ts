@@ -214,6 +214,22 @@ export const profile: Profile = {
     filters: ["Estágio", "Educação Infantil", "Ciências", "Direitos da criança"],
     items: projects,
   },
+  resource: {
+    title: "Recurso pedagógico",
+    lead: "Um jogo para aprender brincando, direto no navegador.",
+    name: "A viagem do Pingo",
+    kind: "Jogo de navegador · Matemática e Geografia",
+    description:
+      "O Pingo, um pinguim-de-magalhães, precisa nadar da Patagônia até Santa Catarina. A criança conta os quadradinhos do caminho, usa a escala do mapa (1 quadradinho = 150 km) e descobre quantos quilômetros ele vai nadar.",
+    skills: ["Escala de mapa", "Multiplicação", "Localização no globo"],
+    href: "/jogo/",
+    cta: "Jogar agora",
+    image: {
+      src: "/fotos/pingo-feliz.png",
+      alt: "O Pingo, um pinguim sorridente",
+      hint: "Pingo",
+    },
+  },
   education: {
     degrees: [
       {

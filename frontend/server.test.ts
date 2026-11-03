@@ -13,6 +13,9 @@ beforeAll(async () => {
   await mkdir(join(root, "assets"));
   await writeFile(join(root, "index.html"), "<h1>Lili</h1>");
   await writeFile(join(root, "assets", "app-abc123.js"), "console.log(1)");
+  await mkdir(join(root, "jogo", "assets"), { recursive: true });
+  await writeFile(join(root, "jogo", "index.html"), "<h1>Pingo</h1>");
+  await writeFile(join(root, "jogo", "assets", "index-xyz789.js"), "console.log(2)");
   site = new StaticSiteServer(root);
 });
 
@@ -33,6 +36,24 @@ describe("StaticSiteServer", () => {
 
   test("caches hashed assets forever", async () => {
     const response = await get("/assets/app-abc123.js");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toContain("immutable");
+  });
+
+  test("serves the game at /jogo/", async () => {
+    const response = await get("/jogo/");
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("<h1>Pingo</h1>");
+  });
+
+  test("redirects /jogo to /jogo/", async () => {
+    const response = await get("/jogo");
+    expect(response.status).toBe(301);
+    expect(response.headers.get("Location")).toBe("/jogo/");
+  });
+
+  test("caches the game's hashed assets forever", async () => {
+    const response = await get("/jogo/assets/index-xyz789.js");
     expect(response.status).toBe(200);
     expect(response.headers.get("Cache-Control")).toContain("immutable");
   });

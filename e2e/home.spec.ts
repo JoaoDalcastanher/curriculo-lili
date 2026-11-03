@@ -50,7 +50,14 @@ test.describe("Página inicial", () => {
 
   test("tem todas as seções", async ({ page }) => {
     await page.goto("/");
-    for (const name of ["Sobre", "Trajetória", "Projetos", "Formação", "Contato"]) {
+    for (const name of [
+      "Sobre",
+      "Trajetória",
+      "Projetos",
+      "Recurso pedagógico",
+      "Formação",
+      "Contato",
+    ]) {
       await expect(page.getByRole("region", { name })).toBeAttached();
     }
   });
@@ -138,6 +145,27 @@ test.describe("Projetos", () => {
     await page.goto("/?projeto=nao-existe");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.getByRole("dialog")).toHaveCount(0);
+  });
+});
+
+test.describe("Recurso pedagógico", () => {
+  test("o botão Jogar agora abre o jogo do Pingo", async ({ page }) => {
+    await page.goto("/#recurso");
+    const section = page.getByRole("region", { name: "Recurso pedagógico" });
+    await expect(section.getByRole("heading", { name: "A viagem do Pingo" })).toBeVisible();
+    const play = section.getByRole("link", { name: "Jogar agora" });
+    await expect(play).toHaveAttribute("href", "/jogo/");
+
+    await play.click();
+    await expect(page).toHaveURL(/\/jogo\/$/);
+    await expect(page).toHaveTitle("A viagem do Pingo");
+    await expect(page.locator("#root")).not.toBeEmpty();
+  });
+
+  test("/jogo sem barra também abre o jogo", async ({ page }) => {
+    await page.goto("/jogo");
+    await expect(page).toHaveURL(/\/jogo\/$/);
+    await expect(page).toHaveTitle("A viagem do Pingo");
   });
 });
 

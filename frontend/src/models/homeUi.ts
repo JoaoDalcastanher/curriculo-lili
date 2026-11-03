@@ -1,6 +1,13 @@
 // Reusable UI types for the home page (Policy 002).
 
-export type SectionId = "inicio" | "sobre" | "trajetoria" | "projetos" | "formacao" | "contato";
+export type SectionId =
+  | "inicio"
+  | "sobre"
+  | "trajetoria"
+  | "projetos"
+  | "recurso"
+  | "formacao"
+  | "contato";
 
 export type NavItem = {
   id: SectionId;

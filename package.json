@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "dev": "bun run --filter frontend dev",
-    "build": "bun run --filter frontend build",
+    "build": "bun run --filter frontend build && bun run build:jogo",
+    "build:jogo": "cd jogo && bun install --frozen-lockfile && BASE_PATH=/jogo/ bunx vite build --outDir ../frontend/dist/client/jogo --emptyOutDir",
     "start": "bun run --filter frontend start",
     "test": "bun test frontend/src frontend/server.test.ts",
     "test:e2e": "bunx playwright test",
