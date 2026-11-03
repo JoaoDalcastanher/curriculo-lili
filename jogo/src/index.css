@@ -1167,9 +1167,22 @@ input {
     width: 104px;
   }
 
-  .postcard-stamp svg {
+  /* Só o Pingo encolhe; o cenário do lugar continua ocupando o selo inteiro. */
+  .postcard-stamp > svg[role='img'] {
     width: 70px;
     height: auto;
+  }
+
+  /* No celular o mapa é baixo: o cartão cresce para baixo (por cima do painel) em vez de rolar por dentro. */
+  .postcard-backdrop {
+    bottom: auto;
+    min-height: 100%;
+    place-items: start center;
+  }
+
+  .postcard {
+    max-height: none;
+    overflow: visible;
   }
 
   .postcard-title {

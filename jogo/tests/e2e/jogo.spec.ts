@@ -140,3 +140,17 @@ test('longe do mapa: começa direto no globo', async ({ page }) => {
   await expect(page.getByTestId('globo')).toBeVisible()
   expect(await hops(page)).toBe(0)
 })
+
+test('o selo do cartão-postal mostra o cenário inteiro e aparece sem cortar', async ({ page }) => {
+  await swim(page, '1000')
+  const stamp = page.getByTestId('postal').locator('.postcard-stamp')
+  await expect(stamp).toBeInViewport({ ratio: 1 })
+  const scene = await stamp.locator('.postcard-horizon').boundingBox()
+  const frame = await stamp.boundingBox()
+  expect(scene).not.toBeNull()
+  expect(frame).not.toBeNull()
+  if (!scene || !frame) {
+    return
+  }
+  expect(scene.width).toBeGreaterThan(frame.width * 0.9)
+})

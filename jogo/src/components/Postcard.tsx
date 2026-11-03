@@ -41,7 +41,7 @@ export function Postcard({ interpretation, onLook, onRetry, onRestart }: Postcar
   const actionRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    actionRef.current?.focus()
+    actionRef.current?.focus({ preventScroll: true })
   }, [interpretation])
 
   const sceneId = interpretation.sceneId ?? interpretation.destination?.id ?? interpretation.body?.id
